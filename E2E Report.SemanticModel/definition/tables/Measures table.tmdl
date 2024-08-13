@@ -1,0 +1,2138 @@
+table 'Measures table'
+	lineageTag: c067b33d-ee1e-4dd3-85a8-202cd7371c41
+
+	/// Мера используется для отображения дистанции до достижения KPI.
+	/// Предполагается её использование только в пределах страницы Summary.
+	measure 'KPI distance, %' = 1 - [KPI actual by product YTD]
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: KPI metrics\Dimensions
+		lineageTag: 6c277b96-3cd5-4399-b8f6-d22f97543118
+
+	measure 'Placeholder - KPI donut chart' = 0.55
+		isHidden
+		displayFolder: KPI metrics\Dummy and placeholders
+		lineageTag: 4b439ab5-7289-4241-92c6-78302d439152
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Мера отражает перевыполнение плана. Доля перевыполнения отображается на чарте с KPI.
+	measure 'KPI overflow' = ```
+			
+			    VAR Result = [KPI actual by product YTD] - 1
+			    RETURN
+			    IF(Result > 0, Result, 0)
+			```
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		displayFolder: KPI metrics\Dimensions
+		lineageTag: 2ac7973d-cb29-4c14-8d18-1e2bd4033647
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	measure 'KPI CY vs LY' = ```
+			
+			    [KPI actual by product MoM] - [LY KPI actual by product MoM]
+			```
+		formatString: #,0.00%;-#,0.00%;#,0.00%
+		displayFolder: KPI metrics\Dimensions
+		lineageTag: 485858c8-3aea-473e-8672-753398a90f9b
+
+	/// Аналог меры KPI actual by product, отражающий значение за прошлый год.
+	measure 'LY KPI actual by product MoM' = CALCULATE([KPI actual by product MoM], SAMEPERIODLASTYEAR('dim Date'[Date]))
+		formatString: #,0.00%;-#,0.00%;#,0.00%
+		displayFolder: KPI metrics\Dimensions
+		lineageTag: 5a9c0ba1-9f00-45b3-8baf-ac6b3c6e1f59
+
+	/// Мера используется для форматирования значения "опережения" или "отставания" KPI от месячной нормы.
+	measure 'fmt - KPI ahead' = "∆: " & FORMAT([KPI ahead MoM], "0.00%") & IF([KPI ahead MoM] > 0, " ↑", " ↓")
+		displayFolder: KPI metrics\Formatting
+		lineageTag: 1e1d2e47-2dee-4eae-b37a-610484231a83
+
+	/// Суммарные продажи (цена х количество).
+	measure 'Total sales CY' = ```
+			SUMX (
+			            'fct Sales', 
+			            'fct Sales'[Quantity] * 'fct Sales'[Unit Price]
+			        )
+			```
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Sales metrics\Dimensions
+		lineageTag: 29563e79-bcc4-4bef-a77d-4013aa490f78
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	/// Мера для форматирования значения разницы между продажами текущего периода и прошлого периода.
+	measure 'fmt - Total sales diff' = FORMAT([Total sales CY vs LY, %], "0.00%") & " " & IF([Total sales CY vs LY, %] > 0, "⇡", "⇣")
+		displayFolder: Sales metrics\Formatting
+		lineageTag: cdf55154-a1b7-4eec-8ada-35a764c49267
+
+	/// Разница продаж между текущим и прошлым годом в %.
+	measure 'Total sales CY vs LY, %' = DIVIDE([Total sales CY] - [Total sales LY], [Total sales LY],0)
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Sales metrics\Dimensions
+		lineageTag: 9d962ef6-e752-4beb-8ff3-141de9430bbc
+
+	/// Суммарные продажи за прошлый период.
+	measure 'Total sales LY' = CALCULATE([Total sales CY], SAMEPERIODLASTYEAR('dim Date'[Date]))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Sales metrics\Dimensions
+		lineageTag: fd99e5e9-0aff-445f-9ffb-a6d8dec0c018
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	/// Возвращает меру заполнителя для бар чарта в зависимости от выбранного поля.
+	measure 'Placeholder - top/bottom measures switch' =
+			
+			        VAR SelectedColumns = SELECTCOLUMNS (
+				        SUMMARIZE ( 'Top Bottom fields', 'Top Bottom fields'[Top Bottom fields], 'Top Bottom fields'[Top Bottom fields Fields] ),
+				        'Top Bottom fields'[Top Bottom fields]
+				        )
+			        RETURN
+			        	SWITCH(
+			        		TRUE(),
+			        		SelectedColumns = "Customers", [Placeholder - T/B customers barchart],
+			        		SelectedColumns = "Brand", [Placeholder - T/B brands barchart],
+			        		[Placeholder - T/B stores barchart]
+			        		)
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		displayFolder: Sales metrics\Dummies and placeholders
+		lineageTag: aa78ab81-f508-4ae4-bad7-c5e547fa5d08
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	/// Возвращает другую меру с ранжированием в зависимости от выбранного поля.
+	measure 'Top/bottom sales switch' =
+			
+			    	VAR SelectedColumns = SELECTCOLUMNS (
+				        SUMMARIZE ( 'Top Bottom fields', 'Top Bottom fields'[Top Bottom fields], 'Top Bottom fields'[Top Bottom fields Fields] ),
+				        'Top Bottom fields'[Top Bottom fields]
+				        )
+			        RETURN
+			        	SWITCH(
+			        		TRUE(),
+			        		SelectedColumns = "Customers", [Top/bottom sales by customers],
+			        		SelectedColumns = "Brand", [Top/bottom sales by brands],
+			        		[Top/bottom sales by stores]
+			        		)
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Sales metrics\Dimensions
+		lineageTag: ed73b555-40ff-4fcc-a5aa-822cf1103c69
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	/// Мера возвращает ограниченное пользователем (через таблицу Positions quantity) число проранжированных записей с продажами по брендам.
+	measure 'Top/bottom sales by brands' = ```
+			
+			    VAR TempTable = FILTER(ADDCOLUMNS(ALLSELECTED('dim Product'[Brand]), "Sales", [Total sales CY]), [Sales] > 0)
+			    VAR TopCust = RANKX(TempTable, [Total sales CY],  ,DESC)
+			    VAR BottomCust = RANKX(TempTable, [Total sales CY],  , ASC)
+			    VAR Ranking = IF(SELECTEDVALUE('Top-bottom mode'[Mode]) = "Top", TopCust, BottomCust)
+			    RETURN
+			        IF(Ranking <= SELECTEDVALUE('Positions quantity'[Positions quantity]), [Total sales CY])
+			```
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		displayFolder: Sales metrics\Dimensions
+		lineageTag: cf494858-3ca9-4c9b-af4c-aa280eda5b2a
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	/// Мера возвращает ограниченное пользователем (через таблицу Positions quantity) число проранжированных записей с продажами по компаниям-покупателям.
+	measure 'Top/bottom sales by customers' = ```
+			
+			    VAR TempTable = FILTER(ADDCOLUMNS(ALLSELECTED('dim Customer'[Company]), "Sales", [Total sales CY]), [Sales] > 0)
+			    VAR TopCust = RANKX(TempTable, [Total sales CY], ,DESC, Dense)
+			    VAR BottomCust = RANKX(TempTable, [Total sales CY], ,ASC, Dense)
+			    VAR Ranking = IF(SELECTEDVALUE('Top-bottom mode'[Mode]) = "Top", TopCust, BottomCust)
+			    RETURN
+			        IF(Ranking <= SELECTEDVALUE('Positions quantity'[Positions quantity]), [Total sales CY])
+			```
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		displayFolder: Sales metrics\Dimensions
+		lineageTag: 71369a2a-83a1-4320-a0f4-f88d4049afae
+
+	/// Мера возвращает ограниченное пользователем (через таблицу Positions quantity) число проранжированных записей с продажами по складам.
+	measure 'Top/bottom sales by stores' = ```
+			
+			    VAR TempTable = FILTER(ADDCOLUMNS(ALLSELECTED('dim Store'[Name]), "Sales", [Total sales CY]), [Sales] > 0)
+			    VAR TopCust = RANKX(TempTable, [Total sales CY],  ,DESC, DENSE)
+			    VAR BottomCust = RANKX(TempTable, [Total sales CY],  , ASC, DENSE)
+			    VAR Ranking = IF(SELECTEDVALUE('Top-bottom mode'[Mode]) = "Top", TopCust, BottomCust)
+			    RETURN
+			        IF(Ranking <= SELECTEDVALUE('Positions quantity'[Positions quantity]), [Total sales CY])
+			```
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		displayFolder: Sales metrics\Dimensions
+		lineageTag: 97eb8fdb-076e-425a-9ca5-3b6dd2cea83c
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	/// Плейсхолдер для доп. инфо в бар чарте с выручкой по брендам.
+	measure 'Placeholder - T/B brands barchart' = DIVIDE(MAXX(ALLSELECTED('dim Product'[Brand]), [Total sales CY]), 3)
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		displayFolder: Sales metrics\Dummies and placeholders
+		lineageTag: 3d026757-21e6-4cd4-91ee-b342692d4b99
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	/// Заполнитель для доп.инфо в бар чарте с выручкой по компаниям-покупателям.
+	measure 'Placeholder - T/B customers barchart' = DIVIDE(MAXX(ALLSELECTED('dim Customer'), [Total sales CY]), 2.8)
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		displayFolder: Sales metrics\Dummies and placeholders
+		lineageTag: 91f7c39b-1a86-43eb-8e7e-dcb8ef60420d
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	/// Заполнитель для доп.инфо в бар чарте по продажам по складам.
+	measure 'Placeholder - T/B stores barchart' = DIVIDE(MAXX(ALLSELECTED('dim Store'[Name]), [Total sales CY]), 3)
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		displayFolder: Sales metrics\Dummies and placeholders
+		lineageTag: a95cc3d7-3d77-45c3-9cb7-bc3e5d5fb8cf
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	/// Определяет рейтинг бренда по среднему чеку. Чем выше средний чек, тем выше рейтинг.
+	measure 'Avg bill rank CY' = RANKX(ALL('dim Product'[Brand]), [Average bill CY],,DESC,Dense)
+		formatString: 0
+		displayFolder: Brand ranking\Dimensions
+		lineageTag: d0678279-c44d-4662-9f9e-335e00ddd090
+
+	/// Изменение рейтинга относительно прошлого периода
+	/// .
+	measure 'Avg bill rank CY vs LY, abs' = CALCULATE([Avg bill rank CY], SAMEPERIODLASTYEAR('dim Date'[Date])) - [Avg bill rank CY]
+		formatString: 0
+		displayFolder: Brand ranking\Dimensions
+		lineageTag: 51ca8972-4e52-47a7-939e-dcff544f6813
+
+	/// Рейтинг по количеству покупок. Чем болше тем лучше.
+	measure 'Purchases rank CY' = RANKX(ALL('dim Product'[Brand]), [Purchases CY],,DESC,Dense)
+		formatString: 0
+		displayFolder: Brand ranking\Dimensions
+		lineageTag: fbcaf3f9-068e-411f-8e11-903c22fb0e54
+
+	/// Изменение рейтинга относительно прошлого периода.
+	measure 'Purchases rank CY vs LY, abs' = CALCULATE([Purchases rank CY], SAMEPERIODLASTYEAR('dim Date'[Date])) - [Purchases rank CY]
+		formatString: 0
+		displayFolder: Brand ranking\Dimensions
+		lineageTag: d8d34a35-b026-4b49-9448-f26d437cf656
+
+	/// Измнение рейтинга относительно прошлого периода.
+	measure 'Discount rate rank CY vs LY, abs' =
+			
+			CALCULATE([Disount rate rank], SAMEPERIODLASTYEAR('dim Date'[Date])) - [Disount rate rank]
+		formatString: 0
+		displayFolder: Brand ranking\Dimensions
+		lineageTag: 058c955f-f45d-4828-81ce-edf7d563aaf1
+
+	/// Рейтинг по размеру скидки. Чем меньше размер скидки, тем выше рейтинг.
+	measure 'Disount rate rank' = RANKX(ALL('dim Product'[Brand]), [Discount, %],,ASC, Dense)
+		formatString: 0
+		displayFolder: Brand ranking\Dimensions
+		lineageTag: 0e6d919c-192c-4007-b59f-6a1e429fb0d9
+
+	/// Форматирующая мера. 
+	measure 'fmt - Avg bill rank summary' = ```
+			
+			    "Rank: " & [Avg bill rank CY] & 
+			    SWITCH(TRUE(), [Avg bill rank CY vs LY, abs] > 0, "⇡", [Avg bill rank CY vs LY, abs] < 0,"⇣") 
+			    & " "  & "(" & [Avg bill rank CY vs LY, abs] & ")"
+			```
+		displayFolder: Brand ranking\Formatting
+		lineageTag: 6b87f7a5-6906-4680-a762-f4f61d221fe6
+
+	measure 'fmt - Purchases rank summary' = ```
+			
+			    "Rank: " & [Purchases rank CY]& 
+			    SWITCH(TRUE(), [Purchases rank CY vs LY, abs] > 0, "⇡", [Purchases rank CY vs LY, abs] < 0,"⇣") 
+			    & " "  & "(" & [Purchases rank CY vs LY, abs] & ")"
+			```
+		displayFolder: Brand ranking\Formatting
+		lineageTag: 307232f9-a527-4d4b-be74-c1da2e367217
+
+	measure 'fmt - Integral rank summary' = ```
+			
+			    "Rank: " & [Integral brand rank CY] & 
+			    SWITCH(TRUE(), [Integral brand rank CY vs LY, abs] > 0, "⇡", [Integral brand rank CY vs LY, abs] < 0,"⇣") 
+			    & " "  & "(" & [Integral brand rank CY vs LY, abs] & ")"
+			```
+		displayFolder: Brand ranking\Formatting
+		lineageTag: 9a52acc0-d9ac-462f-9f4c-f46e9dfc005d
+
+	measure 'fmt - Net profit rank summary' = ```
+			
+			    "Rank: " & [Net profit rank CY] & 
+			    SWITCH(TRUE(), [Net profit rank CY vs LY, abs] > 0, "⇡", [Net profit rank CY vs LY, abs] < 0,"⇣") 
+			    & " "  & "(" & [Net profit rank CY vs LY, abs] & ")"
+			```
+		displayFolder: Brand ranking\Formatting
+		lineageTag: 30373af6-6f28-446f-a311-979f55ab4af1
+
+	measure 'fmt - Sales rank summary' = ```
+			
+			    "Rank: " & [Sales rank CY] & 
+			    SWITCH(TRUE(), [Sales rank CY vs LY, abs] > 0, "⇡", [Sales rank CY vs LY, abs] < 0,"⇣") 
+			    & " "  & "(" & [Sales rank CY vs LY, abs] & ")"
+			```
+		displayFolder: Brand ranking\Formatting
+		lineageTag: e4bdfbe0-dee7-4810-945c-fa73fcc0a45a
+
+	measure 'fmt - Total rank summary' = ```
+			
+			    "Rank: " & [Integral brand rank CY] & 
+			    SWITCH(
+			        TRUE(),
+			        [Integral brand rank CY vs LY, abs] > 0, "⇡", 
+			        [Integral brand rank CY vs LY, abs] = 0, "-",
+			        [Integral brand rank CY vs LY, abs] < 0, "⇣")
+			```
+		displayFolder: Brand ranking\Formatting
+		lineageTag: 4d3ec3dc-86ac-4736-b221-1e4c415875d3
+
+	/// Интегральный рейтинг бренда. Определяется на основе оценок всех остальных рейтингов. 
+	measure 'Integral brand rank CY' = RANKX(ALL('dim Product'[Brand]), [Integral brand rating], ,DESC, Dense)
+		displayFolder: Brand ranking\Dimensions
+		lineageTag: b821a43b-12d3-4d5f-8c60-14711c511043
+
+		formatStringDefinition = "0"
+
+	/// Изменение интегрального рейтинга. Чем выше, тем лучше.
+	measure 'Integral brand rank CY vs LY, abs' = CALCULATE([Integral brand rank CY], SAMEPERIODLASTYEAR('dim Date'[Date])) - [Integral brand rank CY]
+		formatString: 0
+		displayFolder: Brand ranking\Dimensions
+		lineageTag: 526d7fb4-2490-49c3-bde2-fdbee5f3be5f
+
+	/// Интегральный рейтинг за прошлый период. В рамках данного отчета используется только в матрице на странице Summary.
+	measure 'Integral brand rank LY' = CALCULATE([Integral brand rank CY], SAMEPERIODLASTYEAR('dim Date'[Date]))
+		formatString: 0
+		displayFolder: Brand ranking\Dimensions
+		lineageTag: 2cba05e0-2481-4871-9686-e31f957b5990
+
+	/// Рейтинг по чистой прибыли. Чем выше чистая прибыль, тем выше рейтинг.
+	measure 'Net profit rank CY' = RANKX(ALL('dim Product'[Brand]), [Net profit CY],,DESC, Dense)
+		formatString: 0
+		displayFolder: Brand ranking\Dimensions
+		lineageTag: da424bb7-9a61-4b3f-8c65-f2e4e476378c
+
+	/// Изменение рейтинга относительно прошлого периода.
+	measure 'Net profit rank CY vs LY, abs' = CALCULATE([Net profit rank CY], SAMEPERIODLASTYEAR('dim Date'[Date])) - [Net profit rank CY]
+		displayFolder: Brand ranking\Dimensions
+		lineageTag: 40b68eba-8263-4fde-818d-c38874a612a5
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Форматирующая мера для нанесения значения шкалы на горизонтальный бар чарт. Рассчитывает отношение целевой меры к максимальному значению целевой меры по всем брендам.
+	measure 'fmt - Relative avg bill rank' = ```
+			
+			    VAR MaxAvgBill = MAXX(ALL('dim Product'[Brand]), [Average bill CY])
+			    RETURN
+			        DIVIDE([Average bill CY], MaxAvgBill)
+			```
+		displayFolder: Brand ranking\Formatting
+		lineageTag: b57508ce-02f8-4566-a2c3-4c4068f9fa69
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Форматирующая мера для нанесения значения шкалы на горизонтальный бар чарт. Рассчитывает отношение целевой меры к максимальному значению целевой меры по всем брендам.
+	measure 'fmt - Relative discount rank' = ```
+			
+			    VAR MaxDiscount = MAXX(ALL('dim Product'[Brand]), [Discount, %])
+			    RETURN
+			        DIVIDE([Discount, %], MaxDiscount)
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Brand ranking\Formatting
+		lineageTag: 79b0320e-821b-431c-a060-45a2a98f5d1f
+
+	/// Форматирующая мера для нанесения значения шкалы на горизонтальный бар чарт. Рассчитывает отношение целевой меры к максимальному значению целевой меры по всем брендам.
+	measure 'fmt - Relative margin rank' = ```
+			
+			    VAR MaxMargin = MAXX(ALL('dim Product'[Brand]), [Net margin CY])
+			    RETURN
+			        DIVIDE([Net margin CY], MaxMargin)
+			```
+		displayFolder: Brand ranking\Formatting
+		lineageTag: 8df83881-510a-4ccc-9fe6-1fdc1e0f699f
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Форматирующая мера для нанесения значения шкалы на горизонтальный бар чарт. Рассчитывает отношение целевой меры к максимальному значению целевой меры по всем брендам.
+	measure 'fmt - Relative purchases rank' = ```
+			
+			    VAR MaxPurchases = MAXX(ALL('dim Product'[Brand]), [Purchases CY])
+			    RETURN
+			        DIVIDE([Purchases CY], MaxPurchases)
+			```
+		displayFolder: Brand ranking\Formatting
+		lineageTag: 712eae8b-c7c8-46bb-8b52-55689765e981
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Форматирующая мера для нанесения значения шкалы на горизонтальный бар чарт. Рассчитывает отношение целевой меры к максимальному значению целевой меры по всем брендам.
+	measure 'fmt - Relative sales rank' = ```
+			
+			    VAR MaxSales = MAXX(ALL('dim Product'[Brand]), [Total sales CY])
+			    RETURN
+			        DIVIDE([Total sales CY], MaxSales)
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Brand ranking\Formatting
+		lineageTag: 28607632-24e1-42dd-9a28-0444945612d7
+
+	/// Рейтинг по сумме продаж. Чем выше продажи, тем выше рейтинг.
+	measure 'Sales rank CY' = RANKX(ALL('dim Product'[Brand]), [Total sales CY], , DESC, Dense)
+		formatString: 0
+		displayFolder: Brand ranking\Dimensions
+		lineageTag: 29094187-4fe9-457c-bbdb-8caeb4d7bb52
+
+	/// Изменение рейтинга относительно прошлого периода.
+	measure 'Sales rank CY vs LY, abs' = CALCULATE([Sales rank CY], SAMEPERIODLASTYEAR('dim Date'[Date])) - [Sales rank CY]
+		formatString: 0
+		displayFolder: Brand ranking\Dimensions
+		lineageTag: c07faab9-2d11-40d1-940b-4a1e7625a143
+
+	/// Чистая прибыль или чистая маржа. Сумма продаж за вычетом всех расходов и скидок.
+	measure 'Net profit CY' = [Gross margin, abs] - [Discount, abs]
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Sales metrics\Dimensions
+		lineageTag: 964f0528-81ef-44d0-8eee-d2d82d151112
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	/// Чистая прибыль за прошлый период.
+	measure 'Net profit LY' = CALCULATE([Net profit CY], SAMEPERIODLASTYEAR('dim Date'[Date]))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Sales metrics\Dimensions
+		lineageTag: 6cb4eb1f-a066-489d-84ff-02a2648f6056
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	/// Изменение чистой прибыли относительно прошлого периода.
+	measure 'Net profit CY vs LY, %' = ```
+			
+			    DIVIDE([Net profit CY], [Net profit LY], 1) - 1
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Sales metrics\Dimensions
+		lineageTag: 24c0d194-9fba-41b4-98b2-85b30985401d
+
+	/// Средний чек.
+	measure 'Average bill CY' = [Total sales CY]/[Purchases CY]
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: d0c9dfc2-2940-4f26-9b7e-405e13ee4837
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	/// Изменение среднего чека относительного прошлого периода.
+	measure 'Average bill CY vs LY, %' =
+			
+			DIVIDE([Average bill CY], [Average bill LY], 1) - 1
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: 3a8359ed-dbeb-4e83-9f80-eb3362a80251
+
+		extendedProperty MeasureTemplate =
+				{
+				  "daxTemplateName": "MathematicalPercentageDifference",
+				  "version": 0
+				}
+
+		changedProperty = FormatString
+
+	/// Средний чек за прошлый период.
+	measure 'Average bill LY' = CALCULATE([Average bill CY], SAMEPERIODLASTYEAR('dim Date'[Date]))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: 2a22ee4e-6809-45d3-b00a-778828421b00
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	/// Количество покупок.
+	measure 'Purchases CY' = COUNTROWS('fct Sales')
+		formatString: 0
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: 23b6ed3a-7137-439e-9ad2-fbb4d8e185b7
+
+	/// Изменение количества покупок относительно прошлого периода.
+	measure 'Purchases CY vs LY, %' = ```
+			
+			    DIVIDE([Purchases CY], [Purchases LY], 1) - 1
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: 2b061618-8458-4fe7-8d08-7d2ae69f9bff
+
+	/// Количество покупок за прошлый период.
+	measure 'Purchases LY' = CALCULATE([Purchases CY], SAMEPERIODLASTYEAR('dim Date'[Date]))
+		formatString: 0
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: 17e2f4cb-e559-4a23-a794-c03bd72c1a7d
+
+	/// Вклад текущей позиции в KPI. Рассчитывается по отношению к выбранной совокупности брендов/категорий/продуктов.
+	measure 'KPI contribution, %' = DIVIDE([Total sales CY], CALCULATE([KPI target by product], ALLSELECTED('dim Product')))
+		formatString: #,0.00%;-#,0.00%;#,0.00%
+		displayFolder: KPI metrics\Dimensions
+		lineageTag: 8711bfc8-6d34-46d7-bc7f-81487caac8d8
+
+	measure 'fmt - Top''s KPI coverage title' = FORMAT([Top 5 KPI share, %], "0.00%") & " KPI"
+		displayFolder: KPI metrics\Formatting
+		lineageTag: bd48eac4-1bd3-4d6d-85ee-d436f079c922
+
+	measure 'fmt - Top''s KPI coverage subtitle' = ```
+			
+			    VAR MainName = SELECTCOLUMNS(
+			            SUMMARIZE('KPI Slice', 'KPI Slice'[KPI Slice], 'KPI Slice'[KPI Slice Fields]), 'KPI Slice'[KPI Slice])
+			    RETURN
+			        "covered by the top 5 " & LOWER(MainName)
+			```
+		displayFolder: KPI metrics\Formatting
+		lineageTag: 8370c63f-c3c1-4d9e-9958-e61e573e2674
+
+	measure 'fmt - Top\bottom panel lable' =
+			
+			    VAR SelectedColumns = SELECTCOLUMNS (
+				        SUMMARIZE ( 'Top Bottom fields', 'Top Bottom fields'[Top Bottom fields], 'Top Bottom fields'[Top Bottom fields Fields] ),
+				        'Top Bottom fields'[Top Bottom fields]
+				        )
+			    RETURN
+			    SELECTEDVALUE('Top-bottom mode'[Mode]) & " " & SELECTEDVALUE('Positions quantity'[Positions quantity]) & " " & LOWER(SelectedColumns) & " by sales"
+		displayFolder: Sales metrics\Formatting
+		lineageTag: fffb95f2-498a-4c89-b552-4826733c6215
+
+	/// Показатель увеличения продаж в разрезе продуктов. 
+	measure 'Products sales up' = ```
+			
+					VAR ProductsTable = 
+						ADDCOLUMNS(VALUES('dim Product'[Product Name]), "Sales change", [Total sales CY vs LY, %])
+					VAR FilteredTable = FILTER(ProductsTable, [Sales Change] >= 0)
+					RETURN
+						CALCULATE([Total sales CY] - [Total sales LY], KEEPFILTERS(FilteredTable))
+			```
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Products metrics\Dimensions
+		lineageTag: 342f4910-ec64-4206-8659-ef86af1385f5
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	measure 'Products sales up CY vs LY, %' = ```
+			
+			    DIVIDE([Products sales up], [Products sales up LY], 1) - 1
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Products metrics\Dimensions
+		lineageTag: 0b716332-743b-4301-b0c1-5ed1ba875ccc
+
+	/// Вклад позиции в повышение продаж. Расчитывается относительно выбранного среза продуктов/бренда и т.д.
+	measure 'Products sales up contrib, %' = ```
+			
+			    DIVIDE(
+			        [Products sales up],
+			        SUMX(ALLSELECTED('dim Product'), [Products sales up]),
+			        0)
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Products metrics\Dimensions
+		lineageTag: f0cbba78-b945-4f77-8259-338da419215c
+
+	/// Показатель увеличения продаж по продуктам за прошлый период.
+	measure 'Products sales up LY' = CALCULATE([Products sales up], SAMEPERIODLASTYEAR('dim Date'[Date]))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Products metrics\Dimensions
+		lineageTag: d07cbab8-c6cf-4f46-98fd-b1aaecc05d6b
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	measure 'Placeholder - Products sales up' = ```
+			
+			    DIVIDE(
+			        MAXX(ALLSELECTED('dim Product'[Category]), [Products sales up]),
+			        2)
+			```
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		displayFolder: Products metrics\Dummies and placeholders
+		lineageTag: ad589ff6-d359-4287-9cd2-a80a828cd0e4
+
+	/// Лейбл для графиков. Меняется в зависимости от чистого прироста или чистого сокращения суммы продаж .
+	measure 'fmt - Net growth\loss lable' = IF([Total sales CY vs LY, abs] > 0, "Net growth", "Net loss")
+		displayFolder: Products metrics\Formatting
+		lineageTag: b89bb5c7-1fca-43c7-9017-e5101e3f7d60
+
+	/// Величина падения продаж по продуктам. Мера возвращает отрицательную величину. Есть альтернативная версия меры со значением по модулю (с меткой mod.).
+	measure 'Products sales down' = ```
+			
+					VAR ProductsTable = 
+						ADDCOLUMNS(VALUES('dim Product'[Product Name]), "Sales change", [Total sales CY vs LY, %])
+					VAR FilteredTable = FILTER(ProductsTable, [Sales Change] < 0)
+					RETURN
+						CALCULATE([Total sales CY] - [Total sales LY], KEEPFILTERS(FilteredTable))
+			```
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		displayFolder: Products metrics\Dimensions
+		lineageTag: 497b2c6e-3045-424f-b968-b9421de725bd
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	/// Изменение величины падения продаж относительно прошлого периода.
+	measure 'Products sales down CY vs LY (mod.), %' = DIVIDE(ABS([Products sales down]), ABS([Product sales down LY, mod.]), 0) - 1
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Products metrics\Dimensions
+		lineageTag: 1d7307d2-1db3-4295-9437-bdc649b0db14
+
+	/// Мера показывает долю времени, в течение которого продажи падали. Рассчитывается нарастающим итогом.
+	measure 'Products sales loss time' = ```
+			
+			    1 - [Products sales up time]
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Products metrics\Dimensions
+		lineageTag: 4fab7b66-bff2-4600-b81c-6fd5fe551719
+
+	/// Показатель падения продаж по модулю за прошлый период.
+	measure 'Product sales down LY, mod.' = CALCULATE([Product sales down, mod.], SAMEPERIODLASTYEAR('dim Date'[Date]))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Products metrics\Dimensions
+		lineageTag: fa419f0b-9eb3-4701-b4a9-374e47300764
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	/// Показатель снижения продаж в абсолютном выражении. Необходим для более простого отображения на визуалах.
+	measure 'Product sales down, mod.' = ABS([Products sales down])
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Products metrics\Dimensions
+		lineageTag: b5cfaca4-7697-42b7-a7a8-533205c11cdf
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	/// Заглушка для отражения дополнительной информации на бар чартах, отражающих падение продаж.
+	measure 'Placeholder - Product sales down, mod.' = ```
+			
+			    DIVIDE(
+			        MAXX(ALLSELECTED('dim Product'[Category]), [Product sales down, mod.]),
+			        2)
+			```
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		displayFolder: Products metrics\Dummies and placeholders
+		lineageTag: fd844227-f501-4a92-bb26-8f65df5f7a4b
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	/// Вклад позиции (бренда/категории/продукта) в совокупном объеме снижения продаж.
+	measure 'Products sales down (mod.) contrib, %' = ```
+			
+			    DIVIDE(
+			        [Product sales down, mod.],
+			        SUMX(ALLSELECTED('dim Product'), [Product sales down, mod.]),
+			        0
+			    )
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Products metrics\Dimensions
+		lineageTag: 94b78a94-94fe-4327-976c-6c8eae44c63e
+
+	/// Мера показывает, сколько времени продажи продукта растут. Нулевые изменения продаж не учитываются. Рассчитывается накопительным итогом.
+	measure 'Products sales up time' = ```
+			
+				VAR CurrentDate = MAX('dim Date'[Date])
+				VAR GSChanges = CALCULATETABLE(
+									ADDCOLUMNS(
+										SUMMARIZE('fct Sales', 'dim Date'[Year], 'dim Date'[Month], 'dim Product'[ProductKey]),
+										"Sales chng", [Total sales CY vs LY, abs]
+										),
+								'dim Date'[Date] <= CurrentDate)
+				VAR AllRows = COUNTROWS(GSChanges)
+				VAR ProfitRows = COUNTROWS(FILTER(GSChanges, [Sales chng] > 0))
+				RETURN
+					DIVIDE(ProfitRows, AllRows)
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Products metrics\Dimensions
+		lineageTag: 8601a88d-8bbf-4ad9-882a-ce497bcb22db
+
+	/// Разница между продажами текущего периода и прошлого.
+	measure 'Total sales CY vs LY, abs' = ROUND([Total sales CY] - [Total sales LY],2)
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Sales metrics\Dimensions
+		lineageTag: f74e9b6c-fa93-460c-a9bb-2cba6d715160
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	/// В зависимости от заданного режима мера возвращает разницу продаж между текущим и прошлым периодом или в относительном, или в абсолютном выражении.
+	measure 'Total sales diff switch (abs or %)' = ```
+			
+			    SWITCH(
+			        TRUE(),
+			        SELECTEDVALUE('Calculation mode'[Mode]) = "Actual", [Total sales CY vs LY, abs],
+			        [Total sales CY vs LY, %]
+			    )
+			```
+		displayFolder: Sales metrics\Dimensions
+		lineageTag: b69084e9-3dc1-4194-8d39-d6fbebc1d5dd
+
+		formatStringDefinition = IF(SELECTEDVALUE('Calculation mode'[Mode]) = "Actual", "$#,0,.0#K", "0.00%")
+
+	/// Мера подсчитывает количество продуктов с определенным ABC статусом. На каждую дату у каждого продукта свой ABC статус.
+	measure 'ABC Counting' = ```
+			
+			    VAR ABCTable = SUMMARIZE('fct Sales', 'fct Sales'[ProductKey], 'fct Sales'[ABC score])
+			    RETURN
+			        COUNTX(ABCTable, [ABC score])
+			```
+		formatString: 0
+		displayFolder: Products metrics\Dimensions
+		lineageTag: 0df2cc72-376b-491e-af1f-adfc90f8c494
+
+	/// Количество продуктов, по которым выросли продажи.
+	measure 'Products with sales up' = ```
+			
+					VAR ProductsTable = 
+						ADDCOLUMNS(VALUES('dim Product'[Product Name]), "Sales change", [Total sales CY vs LY, %])
+					VAR FilteredTable = FILTER(ProductsTable, [Sales Change] >= 0)
+					RETURN
+						COUNTROWS(FilteredTable)
+			```
+		displayFolder: Products metrics\Dimensions
+		lineageTag: 7740babc-765c-4888-afb7-3ec5a2b6fdd1
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Количество продуктов, по которым упали продажи.
+	measure 'Products with sales down' = ```
+			
+					VAR ProductsTable = 
+						ADDCOLUMNS(VALUES('dim Product'[Product Name]), "Sales change", [Total sales CY vs LY, %])
+					VAR FilteredTable = FILTER(ProductsTable, [Sales Change] < 0)
+					RETURN
+						COUNTROWS(FilteredTable)
+			```
+		formatString: 0
+		displayFolder: Products metrics\Dimensions
+		lineageTag: 4109aaf9-2ed1-4a3a-bf78-757fcc1895b0
+
+	measure 'Discount, %' = DIVIDE([Discount, abs], [Total sales CY])
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Sales metrics\Dimensions
+		lineageTag: ca02f355-e980-4f16-abb2-d4da3b395bba
+
+	measure 'Discount, abs' = ```
+			
+			        SUMX (
+			            'fct Sales',
+			            ( 'fct Sales'[Unit Price] - 'fct Sales'[Net Price] ) * 'fct Sales'[Quantity])
+			```
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Sales metrics\Dimensions
+		lineageTag: d2336b7a-357e-4c0a-91d1-38a2446c7a12
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	/// Мера форматирования текущего рейтинга и его изменения.
+	measure 'fmt - Discount rate rank summary' = ```
+			
+			    "Rank: " & [Disount rate rank] & 
+			    SWITCH(TRUE(), [Discount rate rank CY vs LY, abs] > 0, "⇡", [Discount rate rank CY vs LY, abs] < 0,"⇣") 
+			    & " "  & "(" & [Discount rate rank CY vs LY, abs] & ")"
+			```
+		displayFolder: Brand ranking\Formatting
+		lineageTag: 5c9432b5-caa4-4d10-bdf4-359ef19f0ff5
+
+	measure 'fmt - Currency & distr channel lable' =
+			
+			        VAR SelectedColumns = SELECTCOLUMNS (
+				        SUMMARIZE ( 'Currency and country distribution', 'Currency and country distribution'[Currency and country distribution Fields], 'Currency and country distribution'[Currency and country distribution] ),
+				        'Currency and country distribution'[Currency and country distribution]
+				        )
+			        RETURN
+			            "Sales by " & LOWER(SelectedColumns)
+		displayFolder: Sales metrics\Formatting
+		lineageTag: 3d5f1792-6b52-45f4-b01d-f325c8562c2b
+
+	/// Количество новых покупателей. Новыми покупателями считаются покупатели, у которых дата первого заказа попадает в рассматриваемый период.
+	measure 'New customers' = ```
+			
+			        VAR FirstActTable =
+			            ADDCOLUMNS (
+			                VALUES ( 'dim Customer'[Company] ),
+			                "First act",
+			                    CALCULATE (
+			                        MIN ( 'dim Orders'[Order Date] ),
+			                        ALL ( 'dim Date' )
+			                    )
+			            )
+			        RETURN
+			            COUNTROWS (
+			                FILTER (
+			                    FirstActTable,
+			                    AND (
+			                        ENDOFMONTH ( 'dim Date'[Date] ) >= [First act],
+			                        STARTOFMONTH ( 'dim Date'[Date] ) <= [First act]
+			                    )
+			                )
+			            )
+			```
+		formatString: 0
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: d63ae626-87e4-4798-864c-235c4d701722
+
+	/// Количество новых покупателей за прошлый год.
+	measure 'New customers LY' = CALCULATE([New customers], SAMEPERIODLASTYEAR('dim Date'[Date]))
+		formatString: 0
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: 841519e4-91d6-44d9-b02d-9c481fb47cfa
+
+	/// Количество покупателей на отчетную дату. Рассчитывается накопительным итогом. Учитываются как активные так и неактивные покупатели.
+	measure 'All time customers cnt' =
+			
+			VAR MaxDate = MAX('dim Date'[Date])
+			RETURN
+			CALCULATE(COUNTROWS(VALUES('dim Customer'[Company])), 'dim Date'[Date] <= MaxDate)
+		formatString: 0
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: c06c9958-1cbf-4b30-9b8b-c5593fbec1ab
+
+	measure 'fmt - New customers (color)' = ```
+			
+			    IF(
+			        [New customers] > 0, "#83B9B8", "#FFFFFF")
+			```
+		displayFolder: Customers metrics\Formatting
+		lineageTag: ee133c8c-ec9b-44d6-b160-936c02f10668
+
+	/// Среднедневное количество покупок.
+	measure 'Purchases per day CY' = ```
+			
+			    VAR LastedDays = COUNTROWS('dim Date')
+			    RETURN
+			        ROUNDUP(
+			            DIVIDE(
+			                [Purchases CY],
+			                LastedDays
+			            ), 0
+			        )
+			```
+		formatString: 0
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: a0c5d59c-7683-47db-886d-24c0d2779222
+
+	/// Средняя активность по покупателям за последние 12 месяцев.  Расчитывается скользящим окном на каждый месяц.
+	measure '12m customer activity, %' =
+			
+			        VAR TempTable =
+			        CALCULATETABLE(
+			            ADDCOLUMNS(
+			                SUMMARIZE('fct Sales', 'dim Date'[Month], 'dim Customer'[Company]),
+			                "Active", [_IsActiveCustomer]
+			                ),
+			            DATESINPERIOD('dim Date'[Date], MAX('dim Date'[Date]), -12, MONTH)
+			            )
+					VAR CustomersTable = CALCULATETABLE('dim Customer', DATESINPERIOD('dim Date'[Date], MAX('dim Date'[Date]), -12, MONTH))
+					RETURN
+						DIVIDE(SUMX(TempTable, [Active]), 12 * COUNTROWS(CustomersTable))
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: 74100332-9802-4c66-84eb-7af99b8eff5e
+
+	/// Маркер активного покупателя. Активным является покупатель, который совершил в месяце хотя бы одну покупку (и тогда запись о нем присутствует во временной таблице в мере). Мера не имеет самостоятельного значения.
+	measure _IsActiveCustomer = ```
+			
+					VAR TempTable = 
+						ADDCOLUMNS(
+							SUMMARIZE('fct Sales', 'dim Customer'[Company], 'fct Sales'[CustomerKey]),
+							"Active", 1
+							)
+			        VAR LastMonth = MAX('dim Date'[Month Number])
+					RETURN
+						CALCULATE(COALESCE(MAXX(TempTable, [Active]), 0), 'dim Date'[Month Number] = LastMonth)
+			```
+		formatString: 0
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: 7e30d16d-d7ed-4889-894c-7cce5c317a36
+
+	/// "Грязная" маржа. В рамках данного отчета - до вычета скидок.
+	measure 'Gross margin, abs' = ```
+			
+			        SUMX (
+			            'fct Sales',
+			            ( 'fct Sales'[Unit Price] - 'fct Sales'[Unit Cost] ) * 'fct Sales'[Quantity]
+			        )
+			```
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		displayFolder: Sales metrics\Dimensions
+		lineageTag: c60f92a9-e5f8-463a-a1af-6460bb06cda4
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	measure 'fmt - Active customers rate chart subtitle' = ```
+			
+			    VAR LastRate = LASTNONBLANKVALUE('dim Date'[Month Number], [Active customers rate])
+			    RETURN
+			    "Last value: " & FORMAT(LastRate, "0.00%")
+			```
+		displayFolder: Customers metrics\Formatting
+		lineageTag: 4fdeb354-165c-4127-9197-b3e196a682ba
+
+	measure 'fmt - Customers turnover chart subtitle' = ```
+			
+			    VAR LastValue = LASTNONBLANKVALUE('dim Date'[Month Number], [Customers turnover balance])
+			    RETURN
+			    "Last value: " & LastValue
+			```
+		displayFolder: Customers metrics\Formatting
+		lineageTag: 009ecbe1-446c-4e80-94c7-76457d385d66
+
+	/// Заполнитель для стакового барчарта до 100%.
+	/// 
+	measure 'Stacked barchart placeholder part 1' = 0.2
+		displayFolder: Common dummies and placeholders\100% barchart
+		lineageTag: a9f5e940-3800-45ad-a030-e616c4700663
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Заполнитель для стакового барчарта до 100%.
+	/// 
+	measure 'Stacked barchart placeholder part 2' = 0.2
+		displayFolder: Common dummies and placeholders\100% barchart
+		lineageTag: 0b81158c-eef7-44ce-9efd-7f9689a59fd7
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Заполнитель для стакового барчарта до 100%.
+	/// 
+	measure 'Stacked barchart placeholder part 3' = 0.2
+		displayFolder: Common dummies and placeholders\100% barchart
+		lineageTag: b3d69447-93e7-45fe-8856-886934a7d0c7
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Заполнитель для стакового барчарта до 100%.
+	/// 
+	measure 'Stacked barchart placeholder part 4' = 0.2
+		displayFolder: Common dummies and placeholders\100% barchart
+		lineageTag: 23ebb07f-59b0-454c-b170-95cb2654f767
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Заполнитель для стакового барчарта до 100%.
+	/// 
+	measure 'Stacked barchart placeholder part 5' = 0.2
+		displayFolder: Common dummies and placeholders\100% barchart
+		lineageTag: b76fd3f9-17e2-4f74-acc8-5c391de7d039
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Оборот клиентов за месяц. Показывает разницу между притоком и оттоком покупателей.
+	measure 'Customers turnover balance' = [Arriving customers MoM] - [MoM churned customers]
+		formatString: 0
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: 85a4cdc3-563e-4070-80ee-be7c0f18facf
+
+	/// Мера для маркировки вновь прибывших покупателей. Вновь прибывшим покупателем считается пользователь, который отсутствовал в прошлом месяце. Мера не имеет самостоятельного значения.
+	measure _IsArrivedCustomer = ```
+			
+					VAR LastMonthCustomers = CALCULATETABLE(SUMMARIZE('fct Sales', 'dim Customer'[Company], 'fct Sales'[CustomerKey]), DATEADD('dim Date'[Date], - 1, MONTH))
+					VAR CurrentMonthCustomers = SUMMARIZE('fct Sales', 'dim Customer'[Company], 'fct Sales'[CustomerKey])
+					VAR Difference = EXCEPT(CurrentMonthCustomers, LastMonthCustomers)
+					VAR TempTable = 
+						ADDCOLUMNS(
+							Difference,
+							"Arrived", 1
+							)
+			        VAR CurrentMonth = MAX('dim Date'[Month Number])
+					RETURN
+						COALESCE(MAXX(TempTable, [Arrived]), 0)
+			```
+		formatString: 0
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: 1da3743c-8a8c-4f0d-90a9-8b11cc8aec64
+
+	/// Количество вернувшихся покупателей за месяц. Вернувшимся покупателем считается покупатель, который в прошлом месяце не совершил не одной покупки. Мера не аддитивна на уровне дней.
+	measure 'Arriving customers MoM' = ```
+			
+			    VAR LastMonthCustomers = CALCULATETABLE(VALUES('dim Customer'[Company]), DATEADD('dim Date'[Date], - 1, MONTH))
+			    VAR CurrentMonthCustomers = VALUES('dim Customer'[Company])
+			    VAR Difference = EXCEPT(CurrentMonthCustomers, LastMonthCustomers)
+			    RETURN
+			        COUNTROWS(Difference)
+			```
+		formatString: 0
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: fc325abd-8efd-44ce-a80a-2d2a2f398591
+
+	/// Количество ушедщих покупателей (отток покупателей). Покупатель попадает в отток если он не совершил ни одной покупки в текущем месяце. Мера не аддитивна на уровне дней. 
+	measure 'MoM churned customers' = ```
+			
+			    VAR LastMonthCustomers = CALCULATETABLE(VALUES('dim Customer'[Company]), DATEADD('dim Date'[Date], - 1, MONTH))
+			    VAR CurrentMonthCustomers = VALUES('dim Customer'[Company])
+			    VAR Difference = EXCEPT(LastMonthCustomers, CurrentMonthCustomers)
+			    RETURN
+			        COUNTROWS(Difference)
+			```
+		formatString: 0
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: 7c8d1b27-2224-4f7e-bd5c-d53b9f712591
+
+	/// Среднее абсолютное значение оттока покупателей за 3 последних месяца. Рассчитывается скользящим окном. Подробнее см. [Churned customers].
+	measure '3m avg churned customers' = ```
+			
+					VAR TempTable = 
+						CALCULATETABLE(
+							ADDCOLUMNS(
+								VALUES('dim Date'[Month]),
+								"Lived customers", [MoM churned customers]
+								),
+							DATESINPERIOD('dim Date'[Date], MAX('dim Date'[Date]), -3, MONTH)
+							)
+					RETURN
+						ROUND(AVERAGEX(TempTable, [Lived customers]),0)
+			```
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: 25f6d90f-a066-4750-9596-b8b28700b80c
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Среднее значение оттока покупателей за 3 последних месяца за прошлый период.
+	measure '3m avg churned customers LY' = CALCULATE([3m avg churned customers], SAMEPERIODLASTYEAR('dim Date'[Date]))
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: a9b544ca-92fc-4236-9066-931e161d3b35
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Среднее абсолютное значение прибывающих пользователей за 3 последних месяца. Рассчитывается скользящим окном. Подробнее см. [Arrived customers].
+	measure '3m avg arrived customers' = ```
+			
+					VAR TempTable = 
+						CALCULATETABLE(
+							ADDCOLUMNS(
+								VALUES('dim Date'[Month]),
+								"Arrived customers", [Arriving customers MoM]
+								),
+							DATESINPERIOD('dim Date'[Date], MAX('dim Date'[Date]), -3, MONTH)
+							)
+					RETURN
+						ROUND(AVERAGEX(TempTable, [Arrived customers]),0)
+			```
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: 0abea894-5f19-4c83-9b25-04946a93c6e8
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Среднее количество пребывающих пользователей за 3 последних месяца за прошлый период.
+	measure '3m avg arrived customers LY' = CALCULATE([3m avg arrived customers], SAMEPERIODLASTYEAR('dim Date'[Date]))
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: dca9032a-48e0-4827-bd72-d05fe5b94278
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Мера подсчитывает долю активных покупателей от всех зарегистрированных покупателей на определенную дату. 
+	measure 'Active customers rate' = ```
+			
+						ROUND(
+			                DIVIDE(
+			                    [Active customers], 
+			                    [All time customers cnt]),
+			                    4)
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: 07dfe1b1-cb61-4695-93f7-cf847dfbcdfa
+
+	/// Количество активных покупателей. Активными считаются покупатели, которые совершили хотя бы одну покупку в данном месяце.
+	measure 'Active customers' = COUNTROWS(VALUES('dim Customer'[Company]))
+		formatString: 0
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: f36e701f-f081-4e71-b364-de0c651383f1
+
+	/// Количество неактивных клиентов. Неактивным считается клиент, который не свершил ни одной покупки в рассматриваемом периоде (в случае данного отчета - за месяц).
+	measure 'Inactive customers' = [All time customers cnt] - [Active customers]
+		formatString: 0
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: c1d2fe36-f750-4092-8c3c-b586d5c2f77c
+
+	/// Доля неактивных покупателей от всех зарегистрированных на рассматриваемую дату покупателей.
+	measure 'Inactive customers rate' = ```
+			
+					1 - [Active customers rate]
+			```
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: a49cc710-5b24-48f8-8480-14a4ead1a6b9
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Отображает сумму вклада первых 5 позиций, которые определяются на основании среза по таблице KPI Slice.
+	measure 'Top 5 KPI share, %' = ```
+			
+			    	SWITCH(
+				        SELECTEDVALUE('KPI Slice'[KPI Slice Fields]),
+				        "'dim Product'[Subcategory]",
+				        VAR TemporTable = ADDCOLUMNS(VALUES('dim Product'[Subcategory]), "Share", [KPI contribution, %])
+				        RETURN
+				        SUMX(TOPN(5, TemporTable, [Share], DESC), [Share]),
+				        "'dim Customer'[Company]", 
+				       	VAR TemporTable = ADDCOLUMNS(VALUES('dim Customer'[Company]), "Share", [KPI contribution, %])
+				        RETURN
+				        SUMX(TOPN(5, TemporTable, [Share], DESC), [Share]),
+				        "'dim Product'[Category]", 
+				       	VAR TemporTable = ADDCOLUMNS(VALUES('dim Product'[Category]), "Share", [KPI contribution, %])
+				        RETURN
+				        SUMX(TOPN(5, TemporTable, [Share], DESC), [Share]),
+				        "'dim Product'[Product Name]",
+				      	VAR TemporTable = ADDCOLUMNS(VALUES('dim Product'[Product Name]), "Share", [KPI contribution, %])
+				        RETURN
+				        SUMX(TOPN(5, TemporTable, [Share], DESC), [Share])
+				    )
+			```
+		formatString: #,0.00%;-#,0.00%;#,0.00%
+		displayFolder: KPI metrics\Dimensions
+		lineageTag: df040e91-90f8-47ab-ac56-ddfb20ce3e1a
+
+	/// Заполнитель для горизонтального барчарта.
+	measure RightStackPlaceholder = 0.5
+		displayFolder: Common dummies and placeholders\100% horiz barchart
+		lineageTag: ae53c6c7-df49-4077-9202-d0285ce1b1a7
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Заполнитель для горизонтального барчарта.
+	measure LeftStackPlaceholder = 0.5
+		displayFolder: Common dummies and placeholders\100% horiz barchart
+		lineageTag: d06dedb9-38bb-456d-9330-2da938edcc73
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Заполнитель для горизонтального барчарта.
+	measure FreeSpaceStackPlaceholder = 0.1
+		displayFolder: Common dummies and placeholders\100% horiz barchart
+		lineageTag: 2d9574db-2ace-4eab-8b26-9bfc1e6cfb5a
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Мера позволяет корректно отображать на одном графике отрицательные и положительные значения даже при сильной вариативности показателей (например, очень маленькие положительные значения и очень большие отрицательные). Не имеет самостоятельного значения. Применяется исключительно с Review measures switch и её производными для отображения максимального значения.
+	measure 'Placeholder - Brand review chart max' = ```
+			
+			    VAR TempTable = 
+			        ADDCOLUMNS(
+			            VALUES('dim Date'[Month]),
+			            "CY", [Measures switch CY],
+			            "LY", [Measures switch LY]
+			        )
+			    VAR CYMAX = MAXX(TempTable, [CY])
+			    VAR LYMAX = MAXX(TempTable, [LY])
+			    RETURN
+			        IF(CYMAX > LYMAX, CYMAX, LYMAX) * 1.2
+			```
+		displayFolder: Generic measures\Dummies and placeholders
+		lineageTag: a113ef26-6e5f-41f6-88c3-21aaed22bff1
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Мера создает пустое место в подзаголовке для размещения кнопок/переключателей или чего душе угодно.
+	measure '_Empty subtitile' = REPT(UNICHAR(10),2)
+		displayFolder: Common dummies and placeholders
+		lineageTag: 33f7ade9-9c55-45fc-a41f-f327ca674777
+
+	/// Вклад в KPI без учета топ 5 позиций.
+	measure 'KPI contrib without top 5' = 1 - [Top 5 KPI share, %]
+		formatString: #,0.00%;-#,0.00%;#,0.00%
+		displayFolder: KPI metrics\Dimensions
+		lineageTag: bf1f7cec-0c3f-415d-bb05-e202c77b12d2
+
+	/// Константа - средняя месячная норма выполнения KPI по продажам.
+	measure 'KPI monthly norm' = 0.0833
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: KPI metrics\Dimensions
+		lineageTag: 815b936f-ab2d-4a29-9ece-e979690f4dac
+
+	/// Мера возвращает любую меру, представленную в FP-таблице Review measure slicer, в зависимости от выбора пользователя на срезе.
+	measure 'Measures switch CY' = ```
+			
+			    VAR SelectedMeasure = 
+			        SELECTCOLUMNS(
+			            SUMMARIZE(
+			                'Measures slicer (for review & etc.)', 'Measures slicer (for review & etc.)'[Review measure slicer], 'Measures slicer (for review & etc.)'[Review measure slicer Fields]), 'Measures slicer (for review & etc.)'[Review measure slicer])
+			    RETURN
+			        SWITCH(
+			            TRUE(),
+			            SelectedMeasure = "Sales", [Total sales CY],
+			            SelectedMeasure = "Net profit", [Net profit CY],
+			            SelectedMeasure = "Purchases", [Purchases CY],
+			            SelectedMeasure = "Average bill", [Average bill CY],
+			            SelectedMeasure = "Daily purchases", [Purchases per day CY],
+			            SelectedMeasure = "New customers", [New customers],
+			            SelectedMeasure = "Net sales Δ", [Net products sales change CY],
+			            SelectedMeasure = "12m customers activity", [12m customer activity, %]
+			        )
+			
+			```
+		displayFolder: Generic measures\Dimensions
+		lineageTag: 8a2e4762-3eb8-43d5-98c2-b91627565049
+
+		formatStringDefinition = ```
+				VAR SelectedMeasure = 
+				        SELECTCOLUMNS(
+				            SUMMARIZE(
+				                'Measures slicer (for review & etc.)', 'Measures slicer (for review & etc.)'[Review measure slicer], 'Measures slicer (for review & etc.)'[Review measure slicer Fields]), 'Measures slicer (for review & etc.)'[Review measure slicer])
+				    RETURN
+				        SWITCH(
+				            TRUE(),
+				            SelectedMeasure in {"Sales", "Net profit", "Net sales Δ"}, "$#.00",
+				            SelectedMeasure in {"Purchases", "Daily purchases", "New customers"}, "#,###",
+				            SelectedMeasure = "Average bill", "$#,0,.00#K",
+				            SelectedMeasure = "12m customers activity", "Percent"
+				        )
+				```
+
+	/// Изменение значения меры, представленной в Review measure slicer, относительно значения за прошлый период.
+	/// Если выбранная мера возвращает отрицательное значение за прошлый период, то расчет изменения ведется по абсолютной величине изменения показателя. 
+	measure 'Measures switch CY vs LY, %' = ```
+			
+			    VAR CorrectedLYM = IF([Measures switch LY] > 0, [Measures switch LY], ABS([Measures switch LY]))
+			    RETURN
+			    DIVIDE(
+			        IF(
+			            [Measures switch LY] > 0, [Measures switch CY], 
+			            [Measures switch CY] + CorrectedLYM),
+			        CorrectedLYM,
+			        1) - IF([Measures switch LY] > 0, 1, 0)
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Generic measures\Dimensions
+		lineageTag: 0a4bbb67-1dca-459b-b3fa-29366082e9c1
+
+	/// Интгральный скоринг брендов по 5 парамерам. Используется для расчета интегрального рейтинга. Учитывает количество имеющихся в портфеле брендов.
+	measure 'Integral brand rating' = ```
+			
+			    VAR BrandCounting = COUNTROWS(CALCULATETABLE(VALUES('dim Product'[Brand]), ALL('dim Product')))
+			    VAR SalesRating = DIVIDE(BrandCounting, [Sales rank CY])
+			    VAR BillRating = DIVIDE(BrandCounting, [Avg bill rank CY])
+			    VAR PurchasesRating = DIVIDE(BrandCounting, [Purchases rank CY])
+			    VAR MarginRating = DIVIDE(BrandCounting, [Net profit rank CY])
+			    VAR DiscountRating = DIVIDE([Disount rate rank], BrandCounting) * BrandCounting
+			    RETURN
+			        SalesRating + BillRating + PurchasesRating + MarginRating + DiscountRating
+			```
+		displayFolder: Brand ranking\Dimensions
+		lineageTag: 38651cdd-beaf-45d5-ba5e-9ba8d58dcf24
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Разница интегрального скоринга бренда между текущим и прошлым периодом.
+	measure 'Integral brand rating CY vs LY' = [Integral brand rating] - CALCULATE([Integral brand rating], SAMEPERIODLASTYEAR('dim Date'[Date]))
+		displayFolder: Brand ranking\Dimensions
+		lineageTag: 167b89ce-458a-49f0-a627-6f0473e0a97f
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Мера задает цвет в зависимости от изменения 3х месячного среднего числа активных клиентов.
+	measure 'fmt - 3m avg active customers (color)' = ```
+			
+			    SWITCH(
+			        TRUE(), 
+			        [3m avg active customers CY vs LY] > 0, "green",
+			        [3m avg active customers CY vs LY] < 0, "red",
+			        "#664228")
+			```
+		displayFolder: Customers metrics\Formatting
+		lineageTag: 64436cb5-e846-4460-81e5-44d1a9fd38b3
+
+	/// Форматирующая мера - формирует заголовок для графиков с распределением показателей по брендам.
+	measure 'fmt - Brand distr title' = ```
+			
+			    VAR CurrentField = 
+			        SELECTCOLUMNS(
+			            SUMMARIZE('Measures slicer (for review & etc.)', 'Measures slicer (for review & etc.)'[Review measure slicer], 'Measures slicer (for review & etc.)'[Review measure slicer Fields]), 
+			            'Measures slicer (for review & etc.)'[Review measure slicer])
+			    RETURN
+			        "Brand distribution by " &  LOWER(CurrentField)
+			```
+		displayFolder: Generic measures\Formatting
+		lineageTag: f24350d4-035e-4181-ad5f-c7785f89d3b5
+
+	/// Мера динамически формирует заголовок таблицы с ключевыми клиентами в зависимости от выбранного показателя.
+	measure 'fmt - Key customers table title' = ```
+			
+			    VAR CurrentField = 
+			        SELECTCOLUMNS(
+			            SUMMARIZE('Measures slicer (for review & etc.)', 'Measures slicer (for review & etc.)'[Review measure slicer], 'Measures slicer (for review & etc.)'[Review measure slicer Fields]), 
+			            'Measures slicer (for review & etc.)'[Review measure slicer])
+			    RETURN
+			        "Key customers by " &  LOWER(CurrentField)
+			```
+		displayFolder: Customers metrics\Formatting
+		lineageTag: f07856c5-c382-449d-bb2f-0e9ea4c9ee16
+
+	/// Мера формирует заголовок среза с выбранным из таблицы Review measure slicer набором мер.
+	measure 'fmt - Measures setup slicer title' = ```
+			
+			    VAR CurrentSetup = SELECTEDVALUE('Measures setup'[Setup])
+			    RETURN
+			        IF(CurrentSetup = "Regular", "Regular metrics", "Customers metrics")
+			```
+		displayFolder: Generic measures\Formatting
+		lineageTag: 76814590-c244-435b-a705-0a146026885e
+
+	/// Мера формирует заголовок для core графика на странице Brand review.
+	measure 'fmt - Brand review chart title' = ```
+			
+			    VAR CurrentBrand = SELECTEDVALUE('dim Product'[Brand])
+			    RETURN
+			        CurrentBrand & " overview"
+			```
+		displayFolder: Sales metrics\Formatting
+		lineageTag: 62e54594-0137-4528-ae3e-87ab6a18f765
+
+	/// Мера динамически формирует надпись на кнопке с названием бренда для drillthrough перехода.
+	measure 'fmt - Drill to brand review button' = ```
+			
+			    VAR SelectedBrand = SELECTEDVALUE('dim Product'[Brand])
+			    RETURN
+			        "Go to " & SelectedBrand & " review" 
+			```
+		displayFolder: Sales metrics\Formatting
+		lineageTag: 631653b8-2b72-415c-acd5-73dc826cc089
+
+	/// Целевое значение KPI с грануляцией на уровне продуктов.
+	measure 'KPI target by product' =
+			
+			            SUMX(
+							'dim Product sales share',
+							'dim Product sales share'[KPI Size])
+		displayFolder: Products metrics\Dimensions
+		lineageTag: 2c812009-1226-4513-91cd-df1eac69fd59
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Остаток до достижения KPI. Не может быть ниже нуля (т.е. при перевыполнении).
+	measure 'KPI distance, abs' = ```
+			
+			    VAR Distance = [KPI target by product] - [Total sales CY]
+			    RETURN
+			    IF(Distance > 0, Distance, 0)
+			```
+		displayFolder: KPI metrics\Dimensions
+		lineageTag: d6330261-8063-4655-a4cb-f03548666a42
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Целевое значение KPI (объем продаж).
+	measure 'KPI target' = ```
+			
+			    	VAR CurrentYear = MAX('dim Date'[Year])
+			    	RETURN
+			    		LOOKUPVALUE('dim Sales KPI'[Sales KPI], 'dim Sales KPI'[Report Year], CurrentYear)
+			```
+		displayFolder: KPI metrics\Dimensions
+		lineageTag: 184010cb-6236-423e-8bc4-296a78fbc9b6
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Простой заполнитель с нулевым значением. Может быть полезен если нужно обозначить нижнюю границу в Error bars.
+	measure 'Placeholder - Zero' = 0.0
+		displayFolder: Common dummies and placeholders
+		lineageTag: 9e565ae4-5490-4789-a8d6-83690cecf5bd
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Мера вычисляет выбранный в FP-таблице Review measure slicer показатель за прошлый период.
+	measure 'Measures switch LY' = CALCULATE([Measures switch CY], SAMEPERIODLASTYEAR('dim Date'[Date]))
+		displayFolder: Generic measures\Dimensions
+		lineageTag: 0a802330-2fcb-46fc-a3fe-a550f2406a9e
+
+		formatStringDefinition = ```
+				VAR SelectedMeasure = 
+				        SELECTCOLUMNS(
+				            SUMMARIZE(
+				                'Measures slicer (for review & etc.)', 'Measures slicer (for review & etc.)'[Review measure slicer], 'Measures slicer (for review & etc.)'[Review measure slicer Fields]), 'Measures slicer (for review & etc.)'[Review measure slicer])
+				    RETURN
+				        SWITCH(
+				            TRUE(),
+				            SelectedMeasure in {"Sales", "Net profit", "Net sales Δ"}, "$#.00",
+				            SelectedMeasure in {"Purchases", "Daily purchases", "New customers"}, "#",
+				            SelectedMeasure = "Average bill", "$#,0,.00#K",
+				            SelectedMeasure = "12m customers activity", "Percent"
+				        )
+				```
+
+	/// Рассчитывает среднее значение мер из FP-таблицы Review measure slicer по всем брендам по состоянию на текущий рассматриваемый период.
+	measure 'Measures switch CY - all brands avg' = ```
+			
+					VAR TempTable = 
+						ADDCOLUMNS(
+							ALL('dim Product'[Brand]),
+							"Metric value", [Measures switch CY]
+							)
+					RETURN
+						AVERAGEX(TempTable, [Metric value])
+						
+			
+			```
+		displayFolder: Generic measures\Dimensions
+		lineageTag: 92cb2023-04bf-4062-9535-b29aecd92467
+
+		formatStringDefinition = ```
+				VAR SelectedMeasure = 
+				        SELECTCOLUMNS(
+				            SUMMARIZE(
+				                'Measures slicer (for review & etc.)', 'Measures slicer (for review & etc.)'[Review measure slicer], 'Measures slicer (for review & etc.)'[Review measure slicer Fields]), 'Measures slicer (for review & etc.)'[Review measure slicer])
+				    RETURN
+				        SWITCH(
+				            TRUE(),
+				            SelectedMeasure in {"Sales", "Net profit", "Net sales Δ"}, "$#.00",
+				            SelectedMeasure in {"Purchases", "Daily purchases", "New customers"}, "#",
+				            SelectedMeasure = "Average bill", "$#,0,.00#K",
+				            SelectedMeasure = "12m customers activity", "Percent"
+				        )
+				```
+
+	/// Форматирующая мера - задает цвет в зависимости от изменения значения выбранного на текущий момент показателя в Review measure slicer.
+	measure 'fmt - Review metrics change (color)' = ```
+			
+			    IF([Measures switch CY vs LY, %] >= 0, "#51AEAF", "#AE8585")
+			```
+		displayFolder: Generic measures\Formatting
+		lineageTag: 4370ebdc-6948-462f-82db-4813526ee450
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Net products sales change CY' = [Products sales up] + [Products sales down]
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Products metrics\Dimensions
+		lineageTag: abac940d-33fb-4e25-9ca6-954c5f524f4f
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	/// Разн
+	measure '3m avg active customers CY vs LY' = ```
+			
+			    [3m avg active customers] - [3m avg active customers LY]
+			```
+		formatString: 0
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: 318bc904-a5bb-404c-b2af-ba73798e2152
+
+		annotation PBI_FormatHint = {"isDecimal":true}
+
+	/// Изменение 3 месячного среднего числа активных клиентов относительно прошлого периода.
+	measure '3m avg active customers CY vs LY, %' = ```
+			
+			    VAR Changes = [3m avg active customers] - [3m avg active customers LY]
+			    RETURN
+			        DIVIDE(Changes, [3m avg active customers LY], 1)
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: adaa6ffe-3bf5-4a52-b214-4a2bb03308a9
+
+	/// Скользящая средняя доля активных клиентов за последние 3 месяца. 
+	measure '3m avg active customers rate, %' = ```
+			
+			    ROUND(
+			        DIVIDE(
+			            [3m avg active customers],
+			            [All time customers cnt],
+			            1),
+			            4)
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: e80381d7-c0e9-4ee1-9d37-864faa187648
+
+	/// Скользящее среднее число активных клиентов за последние 3 месяца.
+	measure '3m avg active customers' = ```
+			
+					VAR TempTable = 
+						CALCULATETABLE(
+							ADDCOLUMNS(
+								VALUES('dim Date'[Month]),
+								"Count cust", [Active customers]
+								),
+							DATESINPERIOD('dim Date'[Date], MAX('dim Date'[Date]), -3, MONTH)
+						)
+					RETURN
+						ROUND(AVERAGEX(TempTable, [Count cust]),0)
+			```
+		formatString: 0
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: d9784947-cbfc-427d-b215-3d52abd6ebfb
+
+		annotation PBI_FormatHint = {"isDecimal":true}
+
+	/// Изменение среднего количества возвращающихся клиентов за последние 3 месяца относительно прошлого периода.
+	measure '3m avg arrived customers CY vs LY' = [3m avg arrived customers] - [3m avg arrived customers LY]
+		formatString: 0
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: 2a630c65-9a62-47df-8d3c-6578e1f04c72
+
+		annotation PBI_FormatHint = {"isDecimal":true}
+
+	/// Относительное изменение среднего количества возвращающихся клиентов за последние 3 месяца относительно прошлого периода.
+	measure '3m avg arrived customers CY vs LY, %' = ```
+			
+			    VAR Changes = [3m avg arrived customers] - [3m avg arrived customers LY]
+			    RETURN
+			        DIVIDE(Changes, [3m avg arrived customers LY])
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: 95b1a018-8835-4bcd-9b27-7711230cdb4c
+
+	/// Изменение среднего количества оттока клиентов за последние 3 месяца текущего периода в сравнении с аналогичным прошлым периодом.
+	measure '3m avg churned customers CY vs LY' = [3m avg churned customers] - [3m avg churned customers LY]
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: acc30333-996e-4323-a1f9-1c9967e7d1ab
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Относительное изменение среднего количества оттока клиентов за последние 3 месяца текущего периода в сравнении с аналогичным прошлым периодом.
+	measure '3m avg churned customers CY vs LY, %' = ```
+			
+			    VAR Changes = [3m avg churned customers] - [3m avg churned customers LY]
+			    RETURN
+			        DIVIDE(Changes, [3m avg churned customers LY])
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: 68b82c8d-7d35-4f75-9c42-06ff10b388c8
+
+	/// Средний оборот клиентов за 3 последних месяца. Рассчитывается скользящим окном.
+	measure '3m avg customers turnover balance' = [3m avg arrived customers] - [3m avg churned customers]
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: 8616738a-fef7-455a-b822-cc24502d385c
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Среднее количество неактивных клиентов за последние 3 месяца. Рассчитывается скользящим окном.
+	measure '3m avg inactive customers' = ```
+			
+					VAR TempTable = 
+						CALCULATETABLE(
+							ADDCOLUMNS(
+								VALUES('dim Date'[Month]),
+								"Inactive customers", [Inactive customers rate]
+								),
+							DATESINPERIOD('dim Date'[Date], MAX('dim Date'[Date]), -3, MONTH)
+							)
+					RETURN
+						ROUND(AVERAGEX(TempTable, [Inactive customers]),4)
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: f4a7230e-9281-4a07-b859-d291275aab44
+
+	measure '3m avg active customers LY' = ```
+			
+					CALCULATE([3m avg active customers], SAMEPERIODLASTYEAR('dim Date'[Date]))
+			```
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: 3bf12a55-0479-4d67-9870-bb22aeb65359
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Формирует заголовок для значения меры за прошлый период в зависимости от выбранного в FP-таблице Review measure slicer показателя.
+	measure 'fmt -  Review measure lable LY' = ```
+			
+			    VAR SelectedMeasure = 
+			    SELECTCOLUMNS(
+			        SUMMARIZE(
+			            'Measures slicer (for review & etc.)', 'Measures slicer (for review & etc.)'[Review measure slicer], 'Measures slicer (for review & etc.)'[Review measure slicer Fields]), 'Measures slicer (for review & etc.)'[Review measure slicer])
+			    RETURN
+			        "LY " & LOWER(SelectedMeasure)
+			```
+		displayFolder: Generic measures\Formatting
+		lineageTag: 34983943-fb9d-4df5-9eb9-f1a3f909f4f3
+
+	/// Суммарные продажи накопительным итогом с начала года за прошлый период.
+	measure 'Total sales YTD LY' = CALCULATE([Total sales YTD], SAMEPERIODLASTYEAR('dim Date'[Date]))
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		displayFolder: Sales metrics\Dimensions
+		lineageTag: c1b06690-4f8c-4272-a3e4-0195da28c1ab
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	/// Суммарные продажи накопительным итогом с начала года.
+	measure 'Total sales YTD' = CALCULATE([Total sales CY], DATESYTD('dim Date'[Date]))
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		displayFolder: Sales metrics\Dimensions
+		lineageTag: 07007027-9fa8-4964-bd1e-edeba3fe4ccd
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	/// Заглушка в горизонтальный барчарт для размещения в ней дополнительных (справочных) данных.
+	measure 'Placeholder - Customers metrics distr' = ```
+			
+			    DIVIDE(
+			        MAXX(ALLSELECTED('dim Product'[Brand]), ABS([Measures switch CY])),
+			        3)
+			```
+		displayFolder: Customers metrics\Dummies and placeholders
+		lineageTag: ab611c5a-cec9-4721-b187-b022cca9a48c
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Чистая маржа в текущем периоде.
+	measure 'Net margin CY' = ```
+			
+			        DIVIDE([Net profit CY],[Total sales CY])
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Sales metrics\Dimensions
+		lineageTag: b28a2719-c4ee-45d4-939b-05dcc9b18b4e
+
+	measure 'fmt - Products net sales change (color)' = ```
+			
+			    SWITCH(
+			        TRUE(),
+			        [Net products sales change CY] > 0, "#83B9B8",
+			        [Net products sales change CY] < 0, "#984b50")
+			```
+		displayFolder: Products metrics\Formatting
+		lineageTag: 7adc3420-df07-4fbf-ac69-17789f9fc58d
+
+	measure '_About project' = "About project"
+		displayFolder: Common dummies and placeholders
+		lineageTag: 305311f5-7314-42d8-84d2-4a08277c70f2
+
+	measure '_Empty place' = ""
+		displayFolder: Common dummies and placeholders
+		lineageTag: cb50ec5f-0bbc-4bbb-9241-88ac80efead8
+
+	measure '_Base for column chart' = [Measures switch LY]
+		displayFolder: Common dummies and placeholders
+		lineageTag: fba7b7e7-93fc-4fa3-a576-7decd772324c
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Мера вычисляет разницу между значением за текущий и прошлый периоды в динамических расчетах с применением FP.
+	measure 'Measures switch CY vs LY, abs' = [Measures switch CY] - [Measures switch LY]
+		displayFolder: Generic measures\Dimensions
+		lineageTag: 0e3dad50-ceb9-4045-8962-34015034462e
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Мера показывает значение разницы между аналогичными периодами текущего и прошлого годов, вычисляемое динамически (с полным списком мер можно ознакомиться в таблицe Review measure slicer), только если изменения за период положительные.
+	measure 'dummy - Positive changes' = IF([Measures switch CY vs LY, abs] > 0, [Measures switch CY vs LY, abs], BLANK())
+		displayFolder: Generic measures\Dummies and placeholders
+		lineageTag: 3f2709e9-f2e4-482f-9a1c-9f3710b5656c
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Мера показывает значение разницы между аналогичными периодами текущего и прошлого годов, вычисляемое динамически (с полным списком мер можно ознакомиться в таблицe Review measure slicer), только если изменения за период отрицательные.
+	measure 'dummy - Negative changes' = IF([Measures switch CY vs LY, abs] < 0, [Measures switch CY vs LY, abs], BLANK())
+		displayFolder: Generic measures\Dummies and placeholders
+		lineageTag: 3bd1f349-852e-4ffd-ae0e-3890098c921d
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Мера формирует заголовок для подсказки к главному графику на странице Brand review.
+	measure 'fmt - Brand overview tooltip title' = ```
+			
+			    VAR Month = MAX('dim Date'[Month Short])
+			    VAR Year = YEAR(MAX('dim Date'[Date]))
+			    RETURN
+			    "comparison " & LOWER(Month) & " " & Year & " vs " & LOWER(Month) & " " & Year - 1
+			```
+		displayFolder: Sales metrics\Formatting
+		lineageTag: dc0d4c37-7eda-4c02-b771-9948c28f3b27
+
+	measure 'fmt - RM name for title' = ```
+			
+			    VAR SelectedMeasure = 
+			    SELECTCOLUMNS(
+			        SUMMARIZE(
+			            'Measures slicer (for review & etc.)', 'Measures slicer (for review & etc.)'[Review measure slicer], 'Measures slicer (for review & etc.)'[Review measure slicer Fields]), 'Measures slicer (for review & etc.)'[Review measure slicer])
+			    RETURN
+			        SelectedMeasure
+			```
+		displayFolder: Generic measures\Formatting
+		lineageTag: ad635b6f-7cbd-407f-83b3-e2aae1503fac
+
+	/// Мера формирует подпись для основной карточки на странице Brand review.
+	measure 'fmt - Brand review summary lable' = "YTD " & LOWER([fmt - RM name for title])
+		displayFolder: Sales metrics\Formatting
+		lineageTag: a3dee411-2fde-4aa6-b5a3-67a0961df251
+
+	/// Мера формирует заголовок для таблицы. Используется в подсказке к странице KPI details.
+	measure 'fmt - KPI tracking title' = ```
+			
+			    VAR Month = MAX('dim Date'[Month])
+			    VAR Year = MAX('dim Date'[Year])
+			    RETURN
+			        "KPI tracking for " & LOWER(Month) & " " & Year
+			```
+		displayFolder: KPI metrics\Formatting
+		lineageTag: 4e7afb11-0cca-4744-ac84-fefd06d7a3a2
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'KPI actual by product MoM' = ```
+			
+			                DIVIDE(
+			                    [Total sales CY], 
+			                    [KPI target by product])
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: KPI metrics\Dimensions
+		lineageTag: f851e096-cca8-4f7b-b427-cb40a3acc80a
+
+	measure 'KPI ahead MoM' = ```
+			
+			    VAR Distance = [KPI actual by product MoM] - DIVIDE(1, 12)
+			    RETURN
+			    Distance
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: KPI metrics\Dimensions
+		lineageTag: a9902d40-bad8-42f7-8a67-82853c59e436
+
+	measure 'KPI actual by product YTD' = CALCULATE([KPI actual by product MoM], DATESYTD('dim Date'[Date]))
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: KPI metrics\Dimensions
+		lineageTag: 095f8f4d-049d-463a-a20c-a24d784c74ce
+
+	measure 'KPI ahead YTD' = ```
+			
+			    CALCULATE(
+			        [KPI actual by product YTD] - DIVIDE(1,12) * MAX('dim Date'[Month Number]), DATESYTD('dim Date'[Date]))
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: KPI metrics\Dimensions
+		lineageTag: 0103ced9-273c-4e47-83c4-071f365427d8
+
+	/// Мера возвращает значение другой динамически определяемой меры для покупателя, обладающего самым большим значением такой меры.
+	measure 'Max value' = ```
+			
+			    VAR Ranking = RANKX(ALL('dim Customer'[Company]), [Measures switch CY], ,DESC)
+			    RETURN
+			        IF(Ranking = 1, [Measures switch CY])
+			```
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: 4de2c24a-00a8-451b-960a-603850143efc
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Чистая маржа за аналогичный период прошлого года.
+	measure 'Net margin LY' = CALCULATE([Net margin CY], SAMEPERIODLASTYEAR('dim Date'[Date]))
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Sales metrics\Dimensions
+		lineageTag: 3689aa13-9d7b-4029-86d1-a09bd5e4c771
+
+	/// Одна из группы мер, используемых для оформления карточек с помощью svg рисунков.
+	measure 'svg - Net margin sparklines' = ```
+			
+			// Line and area colours - use %23 instead of # for Firefox compatibility (Measure Derived from Eldersveld Modified by Kolosko)
+			
+			// "Date" field used in this example along the X axis
+			VAR StartDate = STARTOFYEAR('dim Date'[Date])
+			VAR CurrentMonthNumber = MAX('dim Date'[Month Number])
+			VAR Color = IF([Average bill CY vs LY, %] > 0, "#3E5D5D", "#5C3031")
+			VAR LastYearValue = CALCULATE([Net margin LY], 'dim Date'[Month Number] = 12)
+			VAR ContextChangeWrapper =
+			CALCULATE(
+			// "Date" field used in this example along the X axis
+			    VAR XMinDate = MIN('dim Date'[Month Number])
+			    VAR XMaxDate = MAX('dim Date'[Month Number])
+			    // Obtain overall min and overall max measure values when evaluated for each date
+			    VAR YMinValue = MIN(MINX(Values('dim Date'[Month Number]),[Net margin CY]), LastYearValue)
+			    VAR YMaxValue = MAX(MAXX(Values('dim Date'[Month Number]),[Net margin CY]), LastYearValue)
+			    VAR YDelim = YMaxValue - YMinValue
+			
+			    // Build table of X & Y coordinates and fit to 50 x 150 viewbox
+			    VAR SparklineTable = ADDCOLUMNS(
+			        SUMMARIZE('fct Sales','dim Date'[Month Number]),
+			            "X",INT(150 * DIVIDE('dim Date'[Month Number] - XMinDate, XMaxDate - XMinDate)),
+			            "Y",
+			            VAR FirstMonth = 1 = 'dim Date'[Month Number]
+			            VAR Multiplier = IF(FirstMonth, DIVIDE(LastYearValue - YMinValue, YDelim), DIVIDE([Net margin CY] - YMinValue,YDelim))
+			            RETURN
+			            INT(50 * Multiplier)
+			    )
+			    // Concatenate X & Y coordinates to build the sparkline
+			    VAR Lines = CONCATENATEX(SparklineTable,[X] & "," & 50-[Y]," ", 'dim Date'[Month Number])
+			
+			    VAR LastSparkYValue = MAXX( FILTER(SparklineTable, 'dim Date'[Month Number] = XMaxDate), [Y])
+			    VAR LastSparkXValue = MAXX( FILTER(SparklineTable, 'dim Date'[Month Number] = XMaxDate), [X])
+			    VAR FirstSparkYValue = MINX( FILTER(SparklineTable, 'dim Date'[Month Number] = XMinDate), [Y])
+			    VAR FirstparkXValue = MINX( FILTER(SparklineTable, 'dim Date'[Month Number] = XMinDate), [X])
+			
+			    VAR SVGImageURL = 
+			        "<svg xmlns='http://www.w3.org/2000/svg' x='0px' y='0px' viewBox='-7 -10 170 60'>
+			        <defs>
+			            <linearGradient id='grad' x1='0' y1='25' x2='0' y2='50' gradientUnits='userSpaceOnUse'>
+			                <stop stop-color='"&Color & "' offset='0' />
+			                <stop stop-color='"&Color & "' offset='0.3' />
+			                <stop stop-color='"&Color & "' offset='1' />
+			            </linearGradient>
+			        </defs>
+			        <polyline fill='url(#grad)' fill-opacity='0.3' stroke='transparent' 
+			        stroke-width='0' points=' 0 50 " & Lines & 
+			        " 150 150 Z '/>
+			        <polyline fill='transparent' fill-opacity='0.2' stroke-linecap='round' stroke-linejoin='round' stroke='"&Color&"' 
+			        stroke-width='3' points='" & Lines & 
+			        "'/>
+			        <circle cx='"& LastSparkXValue & "' cy='" & 50 - LastSparkYValue & "' r='4' stroke='" & Color & "' stroke-width='3' fill='" &Color& "' />
+			        <circle cx='"& FirstparkXValue & "' cy='" & 50 - FirstSparkYValue & "' r='4' stroke='#7996C0' stroke-width='3' fill='white' />
+			        </svg>"
+			    RETURN SVGImageURL,
+			    DATESINPERIOD('dim Date'[Date], StartDate, CurrentMonthNumber, MONTH)
+			)
+			VAR TooLessPoints = MONTH(StartDate) =CurrentMonthNumber
+			VAR FinalSVG = IF(TooLessPoints, [svg - 404 message for svg], ContextChangeWrapper)
+			RETURN
+			    "data:image/svg+xml;utf8," & FinalSVG 
+			```
+		displayFolder: Sales metrics\Formatting
+		lineageTag: 2484d053-4279-4b04-bd2e-375d4583ceb6
+		dataCategory: ImageUrl
+
+		annotation PBI_FormatHint = {"isText":true}
+
+	/// Изменение в % значения чистой маржи год к году за идентичные периоды.
+	measure 'Net margin CY vs LY, %' = DIVIDE([Net margin CY], [Net margin LY], 1) - 1
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Sales metrics\Dimensions
+		lineageTag: dc91d115-d945-4930-9d99-14b5cf05a300
+
+	/// Одна из группы мер, используемых для оформления карточек с помощью svg рисунков.
+	measure 'svg - Purchases sparklines' = ```
+			
+			// Line and area colours - use %23 instead of # for Firefox compatibility (Measure Derived from Eldersveld Modified by Kolosko)
+			
+			// "Date" field used in this example along the X axis
+			VAR StartDate = STARTOFYEAR('dim Date'[Date])
+			VAR CurrentMonthNumber = MAX('dim Date'[Month Number])
+			VAR Color = IF([Purchases CY vs LY, %] > 0, "#3E5D5D", "#5C3031")
+			VAR LastYearValue = CALCULATE([Purchases LY], 'dim Date'[Month Number] = 12)
+			VAR ContextChangeWrapper =
+			CALCULATE(
+			// "Date" field used in this example along the X axis
+			    VAR XMinDate = MIN('dim Date'[Month Number])
+			    VAR XMaxDate = MAX('dim Date'[Month Number])
+			    // Obtain overall min and overall max measure values when evaluated for each date
+			    VAR YMinValue = MIN(MINX(Values('dim Date'[Month Number]),[Purchases CY]), LastYearValue)
+			    VAR YMaxValue = MAX(MAXX(Values('dim Date'[Month Number]),[Purchases CY]), LastYearValue)
+			    VAR YDelim = YMaxValue - YMinValue
+			
+			    // Build table of X & Y coordinates and fit to 50 x 150 viewbox
+			    VAR SparklineTable = ADDCOLUMNS(
+			        SUMMARIZE('fct Sales','dim Date'[Month Number]),
+			            "X",INT(150 * DIVIDE('dim Date'[Month Number] - XMinDate, XMaxDate - XMinDate)),
+			            "Y",
+			            VAR FirstMonth = 1 = 'dim Date'[Month Number]
+			            VAR Multiplier = IF(FirstMonth, DIVIDE(LastYearValue - YMinValue, YDelim), DIVIDE([Purchases CY] - YMinValue,YDelim))
+			            RETURN
+			            INT(50 * Multiplier)
+			    )
+			    // Concatenate X & Y coordinates to build the sparkline
+			    VAR Lines = CONCATENATEX(SparklineTable,[X] & "," & 50-[Y]," ", 'dim Date'[Month Number])
+			
+			    VAR LastSparkYValue = MAXX( FILTER(SparklineTable, 'dim Date'[Month Number] = XMaxDate), [Y])
+			    VAR LastSparkXValue = MAXX( FILTER(SparklineTable, 'dim Date'[Month Number] = XMaxDate), [X])
+			    VAR FirstSparkYValue = MINX( FILTER(SparklineTable, 'dim Date'[Month Number] = XMinDate), [Y])
+			    VAR FirstparkXValue = MINX( FILTER(SparklineTable, 'dim Date'[Month Number] = XMinDate), [X])
+			
+			    VAR SVGImageURL = 
+			       "<svg xmlns='http://www.w3.org/2000/svg' x='0px' y='0px' viewBox='-7 -10 170 60'>
+			        <defs>
+			            <linearGradient id='grad' x1='0' y1='25' x2='0' y2='50' gradientUnits='userSpaceOnUse'>
+			                <stop stop-color='"&Color & "' offset='0' />
+			                <stop stop-color='"&Color & "' offset='0.3' />
+			                <stop stop-color='"&Color & "' offset='1' />
+			            </linearGradient>
+			        </defs>
+			        <polyline fill='url(#grad)' fill-opacity='0.3' stroke='transparent' 
+			        stroke-width='0' points=' 0 50 " & Lines & 
+			        " 150 150 Z '/>
+			        <polyline fill='transparent' fill-opacity='0.2' stroke-linecap='round' stroke-linejoin='round' stroke='"&Color&"' 
+			        stroke-width='3' points='" & Lines & 
+			        "'/>
+			        <circle cx='"& LastSparkXValue & "' cy='" & 50 - LastSparkYValue & "' r='4' stroke='" & Color & "' stroke-width='3' fill='" &Color& "' />
+			        <circle cx='"& FirstparkXValue & "' cy='" & 50 - FirstSparkYValue & "' r='4' stroke='#7996C0' stroke-width='3' fill='white' />
+			        </svg>"
+			    RETURN SVGImageURL,
+			    DATESINPERIOD('dim Date'[Date], StartDate, CurrentMonthNumber, MONTH)
+			)
+			VAR TooLessPoints = MONTH(StartDate) = CurrentMonthNumber
+			VAR FinalSVG = IF(TooLessPoints, [svg - 404 message for svg], ContextChangeWrapper)
+			RETURN
+			    "data:image/svg+xml;utf8," & FinalSVG 
+			```
+		displayFolder: Sales metrics\Formatting
+		lineageTag: 70b1d6f8-52a1-41b7-b511-71a734fe5bfd
+		dataCategory: ImageUrl
+
+	/// Одна из группы мер, используемых для оформления карточек с помощью svg рисунков.
+	measure 'svg - Purchases per day sparklines' = ```
+			
+			// Line and area colours - use %23 instead of # for Firefox compatibility (Measure Derived from Eldersveld Modified by Kolosko)
+			
+			// "Date" field used in this example along the X axis
+			VAR StartDate = STARTOFYEAR('dim Date'[Date])
+			VAR CurrentMonthNumber = MAX('dim Date'[Month Number])
+			VAR Color = IF([Purchases per day CY vs LY, %] > 0, "#3E5D5D", "#5C3031")
+			VAR LastYearValue = CALCULATE([Purchases per day LY], 'dim Date'[Month Number] = 12)
+			VAR ContextChangeWrapper =
+			CALCULATE(
+			// "Date" field used in this example along the X axis
+			    VAR XMinDate = MIN('dim Date'[Month Number])
+			    VAR XMaxDate = MAX('dim Date'[Month Number])
+			    // Obtain overall min and overall max measure values when evaluated for each date
+			    VAR YMinValue = MIN(MINX(Values('dim Date'[Month Number]),[Purchases per day CY]), LastYearValue)
+			    VAR YMaxValue = MAX(MAXX(Values('dim Date'[Month Number]),[Purchases per day CY]), LastYearValue)
+			    VAR YDelim = YMaxValue - YMinValue
+			
+			    // Build table of X & Y coordinates and fit to 50 x 150 viewbox
+			    VAR SparklineTable = ADDCOLUMNS(
+			        SUMMARIZE('fct Sales','dim Date'[Month Number]),
+			            "X",INT(150 * DIVIDE('dim Date'[Month Number] - XMinDate, XMaxDate - XMinDate)),
+			            "Y",
+			            VAR FirstMonth = 1 = 'dim Date'[Month Number]
+			            VAR Multiplier = IF(FirstMonth, DIVIDE(LastYearValue - YMinValue, YDelim), DIVIDE([Purchases per day CY] - YMinValue,YDelim))
+			            RETURN
+			            INT(50 * Multiplier)
+			    )
+			    // Concatenate X & Y coordinates to build the sparkline
+			    VAR Lines = CONCATENATEX(SparklineTable,[X] & "," & 50-[Y]," ", 'dim Date'[Month Number])
+			
+			    VAR LastSparkYValue = MAXX( FILTER(SparklineTable, 'dim Date'[Month Number] = XMaxDate), [Y])
+			    VAR LastSparkXValue = MAXX( FILTER(SparklineTable, 'dim Date'[Month Number] = XMaxDate), [X])
+			    VAR FirstSparkYValue = MINX( FILTER(SparklineTable, 'dim Date'[Month Number] = XMinDate), [Y])
+			    VAR FirstparkXValue = MINX( FILTER(SparklineTable, 'dim Date'[Month Number] = XMinDate), [X])
+			
+			    VAR SVGImageURL = 
+			       "<svg xmlns='http://www.w3.org/2000/svg' x='0px' y='0px' viewBox='-7 -10 170 60'>
+			        <defs>
+			            <linearGradient id='grad' x1='0' y1='25' x2='0' y2='50' gradientUnits='userSpaceOnUse'>
+			                <stop stop-color='"&Color & "' offset='0' />
+			                <stop stop-color='"&Color & "' offset='0.3' />
+			                <stop stop-color='"&Color & "' offset='1' />
+			            </linearGradient>
+			        </defs>
+			        <polyline fill='url(#grad)' fill-opacity='0.3' stroke='transparent' 
+			        stroke-width='0' points=' 0 50 " & Lines & 
+			        " 150 150 Z '/>
+			        <polyline fill='transparent' fill-opacity='0.2' stroke-linecap='round' stroke-linejoin='round' stroke='"&Color&"' 
+			        stroke-width='3' points='" & Lines & 
+			        "'/>
+			        <circle cx='"& LastSparkXValue & "' cy='" & 50 - LastSparkYValue & "' r='4' stroke='" & Color & "' stroke-width='3' fill='" &Color& "' />
+			        <circle cx='"& FirstparkXValue & "' cy='" & 50 - FirstSparkYValue & "' r='4' stroke='#7996C0' stroke-width='3' fill='white' />
+			        </svg>"
+			    RETURN SVGImageURL,
+			    DATESINPERIOD('dim Date'[Date], StartDate, CurrentMonthNumber, MONTH)
+			)
+			VAR TooLessPoints = MONTH(StartDate) = CurrentMonthNumber
+			VAR FinalSVG = IF(TooLessPoints, [svg - 404 message for svg], ContextChangeWrapper)
+			RETURN
+			    "data:image/svg+xml;utf8," & FinalSVG 
+			```
+		displayFolder: Sales metrics\Formatting
+		lineageTag: f55ee362-91c3-4458-94b2-64b6884e0f8d
+		dataCategory: ImageUrl
+
+	/// Среднедневное число покупок за аналогичный период прошлого года.
+	measure 'Purchases per day LY' = ```
+			
+			    CALCULATE([Purchases per day CY], SAMEPERIODLASTYEAR('dim Date'[Date]))
+			```
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: ea11e4aa-79be-438e-8049-f746a65e91ed
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Изменение среднедневного числа покупок относительно прошлого периода.
+	measure 'Purchases per day CY vs LY, %' = ```
+			
+			    DIVIDE([Purchases per day CY], [Purchases per day LY], 1) - 1
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Customers metrics\Dimensions
+		lineageTag: 3f9c0d8a-2e21-43fa-af6b-4d926de4f9d4
+
+	/// Мера формирует заголовок для столбцовой диаграммы програсса KPI на странице Summary.
+	measure 'fmt - KPI bar subtitle' = FORMAT([KPI distance, %], "0.00%")
+		displayFolder: KPI metrics\Formatting
+		lineageTag: 9d1005de-1511-48b7-b6b2-82c56ac1212b
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Мера динамически формирует заголовок карточки Total sales в зависимости от положительного или отрицательного изменения показателя.
+	measure 'fmt - Total sales barchart title' = ```
+			
+			    IF([Total sales CY vs LY, %] > 0, "Better than LY on", "Worse than LY on")
+			```
+		displayFolder: Sales metrics\Formatting
+		lineageTag: 8d75431c-dc4a-4c6e-ab8e-0d2cac450151
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Мера формирует подзаголовок для карточки Total sales на главной странице в виде значения изменения показателя за период относительно прошлого года. 
+	measure 'fmt - Total sales barchart subtitle' = ```
+			
+			    FORMAT([Total sales CY vs LY, %], "0.00%")
+			```
+		displayFolder: Sales metrics\Formatting
+		lineageTag: 248cae75-7663-4c26-9ee6-6751a04ee241
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Одна из группы мер, используемых для оформления карточек с помощью svg рисунков.
+	measure 'svg - 404 message for svg' =
+			
+			"<svg height='50' width='150' xmlns='http://www.w3.org/2000/svg'>
+			  <text x='0' y='0' fill='black' font-size='15' font-family='din'>
+			    <tspan x='0' dy='15'>Select start of the</tspan>
+			    <tspan x='0' dy='15'>year, not enough</tspan>
+			    <tspan x='0' dy='15'>history for the graph.</tspan>
+			</text>
+			</svg>"
+		displayFolder: Sales metrics\Formatting
+		lineageTag: 302d370a-9de2-4d16-b117-f31125c19a59
+		dataCategory: ImageUrl
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Одна из группы мер, используемых для оформления карточек с помощью svg рисунков.
+	measure 'svg - Avg bill sparklines' = ```
+			
+			// Line and area colours - use %23 instead of # for Firefox compatibility (Measure Derived from Eldersveld Modified by Kolosko)
+			VAR StartDate = STARTOFYEAR('dim Date'[Date])
+			VAR CurrentMonthNumber = MAX('dim Date'[Month Number])
+			VAR Color = IF([Average bill CY vs LY, %] > 0, "#3E5D5D", "#5C3031")
+			VAR LastYearValue = CALCULATE([Average bill LY], 'dim Date'[Month Number] = 12)
+			VAR ContextChangeWrapper =
+			CALCULATE(
+			// "Date" field used in this example along the X axis
+			    VAR XMinDate = MIN('dim Date'[Month Number])
+			    VAR XMaxDate = MAX('dim Date'[Month Number])
+			    // Obtain overall min and overall max measure values when evaluated for each date
+			    VAR YMinValue = MIN(MINX(Values('dim Date'[Month Number]),[Average bill CY]), LastYearValue)
+			    VAR YMaxValue = MAX(MAXX(Values('dim Date'[Month Number]),[Average bill CY]), LastYearValue)
+			    VAR YDelim = YMaxValue - YMinValue
+			
+			    // Build table of X & Y coordinates and fit to 50 x 150 viewbox
+			    VAR SparklineTable = ADDCOLUMNS(
+			        SUMMARIZE('fct Sales','dim Date'[Month Number]),
+			            "X",INT(150 * DIVIDE('dim Date'[Month Number] - XMinDate, XMaxDate - XMinDate)),
+			            "Y",
+			            VAR FirstMonth = 1 = 'dim Date'[Month Number]
+			            VAR Multiplier = IF(FirstMonth, DIVIDE(LastYearValue - YMinValue, YDelim), DIVIDE([Average bill CY] - YMinValue,YDelim))
+			            RETURN
+			            INT(50 * Multiplier)
+			    )
+			    // Concatenate X & Y coordinates to build the sparkline
+			    VAR Lines = CONCATENATEX(SparklineTable,[X] & "," & 50-[Y]," ", 'dim Date'[Month Number])
+			
+			    VAR LastSparkYValue = MAXX( FILTER(SparklineTable, 'dim Date'[Month Number] = XMaxDate), [Y])
+			    VAR LastSparkXValue = MAXX( FILTER(SparklineTable, 'dim Date'[Month Number] = XMaxDate), [X])
+			    VAR FirstSparkYValue = MINX( FILTER(SparklineTable, 'dim Date'[Month Number] = XMinDate), [Y])
+			    VAR FirstparkXValue = MINX( FILTER(SparklineTable, 'dim Date'[Month Number] = XMinDate), [X])
+			
+			    VAR SVGImageURL = 
+			        "<svg xmlns='http://www.w3.org/2000/svg' x='0px' y='0px' viewBox='-7 -10 170 60'>
+			        <defs>
+			            <linearGradient id='grad' x1='0' y1='25' x2='0' y2='50' gradientUnits='userSpaceOnUse'>
+			                <stop stop-color='"&Color & "' offset='0' />
+			                <stop stop-color='"&Color & "' offset='0.3' />
+			                <stop stop-color='"&Color & "' offset='1' />
+			            </linearGradient>
+			        </defs>
+			        <polyline fill='url(#grad)' fill-opacity='0.3' stroke='transparent' 
+			        stroke-width='0' points=' 0 50 " & Lines & 
+			        " 150 150 Z '/>
+			        <polyline fill='transparent' fill-opacity='0.2' stroke-linecap='round' stroke-linejoin='round' stroke='"&Color&"' 
+			        stroke-width='3' points='" & Lines & 
+			        "'/>
+			        <circle cx='"& LastSparkXValue & "' cy='" & 50 - LastSparkYValue & "' r='4' stroke='" & Color & "' stroke-width='3' fill='" &Color& "' />
+			        <circle cx='"& FirstparkXValue & "' cy='" & 50 - FirstSparkYValue & "' r='4' stroke='#7996C0' stroke-width='3' fill='white' />
+			        </svg>"
+			    RETURN SVGImageURL,
+			    DATESINPERIOD('dim Date'[Date], StartDate, CurrentMonthNumber, MONTH)
+			)
+			VAR TooLessPoints = MONTH(StartDate) = CurrentMonthNumber
+			VAR FinalSVG = IF(TooLessPoints, [svg - 404 message for svg], ContextChangeWrapper)
+			RETURN
+			    "data:image/svg+xml;utf8," & FinalSVG 
+			```
+		displayFolder: Sales metrics\Formatting
+		lineageTag: 0962e025-d42c-49ce-b46d-31cf9746fced
+		dataCategory: ImageUrl
+
+	/// Мера используется на странице KPI details для выделения строк с топ 5 позиций, вносящих наибольший вклад в достижение KPI.
+	measure 'fmt - Top 5 KPI row highlight' = ```
+			
+			       	VAR Test = SWITCH(
+				        SELECTEDVALUE('KPI Slice'[KPI Slice Fields]),
+				        "'dim Product'[Subcategory]",
+				        MAX('dim Product'[Subcategory]) in TOPN(5, ALL('dim Product'[Subcategory]), [KPI contribution, %], DESC),
+				        "'dim Customer'[Company]", 
+				        MAX('dim Customer'[Company]) in TOPN(5, ALL('dim Customer'[Company]), [KPI contribution, %], DESC), 
+				        "'dim Product'[Category]", 
+				        MAX('dim Product'[Category]) in TOPN(5, ALL('dim Product'[Category]), [KPI contribution, %], DESC),
+				        "'dim Product'[Product Name]",
+				        MAX('dim Product'[Product Name]) in TOPN(5, ALL('dim Product'[Product Name]), [KPI contribution, %], DESC)
+				    )
+			        RETURN
+			            IF(Test, "#6e75a7", "#323b82")
+			```
+		displayFolder: KPI metrics\Formatting
+		lineageTag: bb8e905c-0363-4279-97a2-bd0336f441e3
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Мера показывает значение Total sales только если изменения за период отрицательные.
+	measure 'dummy - Negative trend total sales (CY)' = IF([Total sales CY vs LY, %] > 0, 0, [Total sales CY])
+		displayFolder: Sales metrics\Dummies and placeholders
+		lineageTag: 50dd93d6-3f31-4929-968f-237d718674c6
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Мера показывает значение Total sales только если изменения за период положительные.
+	measure 'dummy - Positive trend total sales (CY)' = IF([Total sales CY vs LY, %] > 0, [Total sales CY], 0)
+		displayFolder: Sales metrics\Dummies and placeholders
+		lineageTag: 1ab2ea6a-9b3b-4105-a323-2f4dc770b0b3
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Мера используется для фиксации значения в слайсере типа "Года" при выборе индивидуального интервала дат в другом слайсере (в противном случае будет доступен некорректный диапазон годов, что может сбить с толку пользователей).
+	measure 'dummy - filtered dates' = IF(ISFILTERED('dim Date'[Date]), 0, 1)
+		displayFolder: Common dummies and placeholders
+		lineageTag: 7c25b112-67d8-4a81-ae25-0b355372d373
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Заглушка для отображения данных по рейтингу бренда в селекторе брендов (страница Brand review).
+	measure 'Placeholder - Rank lines' = 100000
+		formatString: 0
+		displayFolder: Brand ranking\Dummies and placeholders
+		lineageTag: 052c651e-53f6-4cc4-994b-5e152e13f1bc
+
+	/// Форматирующая мера, делает элемент объекта прозрачным.
+	measure 'fmt - Always transparent' = "#FFFFFF00"
+		displayFolder: Common dummies and placeholders\Date filter panel
+		lineageTag: d468ad38-195a-4f30-a5fd-2da4ac255e5b
+
+	/// Мера используется для оформления индикатора фильтра дат, а именно для заливки заднего фона.
+	measure 'fmt - Indicate active date filter' = ```
+			
+			    IF(ISFILTERED('dim Date'[Date]), [fmt - Always transparent], "#1F3858")
+			```
+		displayFolder: Common dummies and placeholders\Date filter panel
+		lineageTag: dcf410a0-6e0d-47e8-8263-bfd0a8c0baed
+
+	/// Мера используется для оформления индикатора дат, а именно для управления цветом шрифта.
+	measure 'fmt - Transparent font' = IF(ISFILTERED('dim Date'[Date]), [fmt - Always transparent], "white")
+		displayFolder: Common dummies and placeholders\Date filter panel
+		lineageTag: e57d78a7-821f-4258-9d10-1e7e4446dbfe
+
+	column Value
+		dataType: int64
+		formatString: 0
+		lineageTag: 726cfc1a-25b2-4bf9-b839-6aba546e3a82
+		summarizeBy: sum
+		isNameInferred
+		isDataTypeInferred
+		sourceColumn: [Value]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Measures table' = calculated
+		mode: import
+		source = {0}
+
+	annotation PBI_Id = 855245e283da483292b04367b1a873f1
+

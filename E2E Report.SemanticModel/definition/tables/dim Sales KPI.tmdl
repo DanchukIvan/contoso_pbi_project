@@ -1,0 +1,37 @@
+table 'dim Sales KPI'
+	lineageTag: 6fe6d980-dba2-408e-94f6-1cb76362fc5d
+
+	column 'Report Year'
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: d3f9c190-bab2-4d0f-9576-d995a0707cbf
+		summarizeBy: none
+		sourceColumn: Report Year
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Sales KPI'
+		dataType: double
+		sourceProviderType: float
+		lineageTag: fdd037f3-4c1b-447a-bd95-6cde4f8f5073
+		summarizeBy: sum
+		sourceColumn: Sales KPI
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition 'dim Sales KPI' = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("BISERVER2", "Contoso 1M"),
+				    Data_SalesKPI = Source{[Schema="Data",Item="SalesKPI"]}[Data]
+				in
+				    Data_SalesKPI
+
+	changedProperty = Name
+
+	annotation PBI_ResultType = Table
+

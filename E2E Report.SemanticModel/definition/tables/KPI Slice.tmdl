@@ -1,0 +1,59 @@
+/// FP таблица для отображения разрезов KPI на странице KPI details.
+table 'KPI Slice'
+	isHidden
+	lineageTag: 5cf8bd63-8ffc-4b3c-91ca-482b8df566db
+
+	column 'KPI Slice'
+		dataType: string
+		isHidden
+		lineageTag: 8765423a-0fb1-40ce-84f7-faad45e330b3
+		summarizeBy: none
+		isDataTypeInferred
+		sourceColumn: [Value1]
+		sortByColumn: 'KPI Slice Order'
+
+		relatedColumnDetails
+			groupByColumn: 'KPI Slice Fields'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'KPI Slice Fields'
+		dataType: string
+		isHidden
+		lineageTag: a254889a-3e99-4f8c-96a3-fb6784c43322
+		summarizeBy: none
+		isDataTypeInferred
+		sourceColumn: [Value2]
+		sortByColumn: 'KPI Slice Order'
+
+		extendedProperty ParameterMetadata =
+				{
+				  "kind": 2,
+				  "version": 3
+				}
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'KPI Slice Order'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 0812274c-f4bb-491e-878d-cd24996d1035
+		summarizeBy: sum
+		isDataTypeInferred
+		sourceColumn: [Value3]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'KPI Slice' = calculated
+		mode: import
+		source = ```
+				{("Customers", NAMEOF('dim Customer'[Company]), 0),
+				    ("Category", NAMEOF('dim Product'[Category]), 1),
+				    ("Subcategory", NAMEOF('dim Product'[Subcategory]), 2),
+				    ("Product", NAMEOF('dim Product'[Product Name]), 3)   
+				}
+				```
+
+	annotation PBI_Id = ebe01fcbc0ea485f886ad938adec88fe
+

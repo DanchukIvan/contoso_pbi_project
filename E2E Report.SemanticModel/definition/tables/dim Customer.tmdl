@@ -1,0 +1,220 @@
+table 'dim Customer'
+	lineageTag: 44610686-dc15-491a-80ee-c50136ef9936
+
+	column CustomerKey
+		dataType: int64
+		isNullable: false
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: fb28efd7-7bba-42b5-a29d-308d56ae98f1
+		summarizeBy: none
+		sourceColumn: CustomerKey
+
+		annotation SummarizationSetBy = Automatic
+
+	column Gender
+		dataType: string
+		sourceProviderType: nvarchar(10)
+		lineageTag: 40afb701-8faa-479f-9a12-8b2c01fc3144
+		summarizeBy: none
+		sourceColumn: Gender
+
+		annotation SummarizationSetBy = Automatic
+
+	column Title
+		dataType: string
+		sourceProviderType: nvarchar(50)
+		lineageTag: 5e2164fb-1075-43ee-ac1b-ab98f1b14143
+		summarizeBy: none
+		sourceColumn: Title
+
+		annotation SummarizationSetBy = Automatic
+
+	column GivenName
+		dataType: string
+		sourceProviderType: nvarchar(150)
+		lineageTag: a46581a7-5913-4f89-bf86-a9f4a13e179f
+		summarizeBy: none
+		sourceColumn: GivenName
+
+		annotation SummarizationSetBy = Automatic
+
+	column MiddleInitial
+		dataType: string
+		sourceProviderType: nvarchar(150)
+		lineageTag: 26f487b8-575f-4a7f-b845-97cc3f4ec39b
+		summarizeBy: none
+		sourceColumn: MiddleInitial
+
+		annotation SummarizationSetBy = Automatic
+
+	column Surname
+		dataType: string
+		sourceProviderType: nvarchar(150)
+		lineageTag: 9cce7526-6d5e-4825-bbb1-73641e23e8d2
+		summarizeBy: none
+		sourceColumn: Surname
+
+		annotation SummarizationSetBy = Automatic
+
+	column StreetAddress
+		dataType: string
+		sourceProviderType: nvarchar(150)
+		lineageTag: dfa59286-44a1-45a9-8750-8b6c35116244
+		summarizeBy: none
+		sourceColumn: StreetAddress
+
+		annotation SummarizationSetBy = Automatic
+
+	column City
+		dataType: string
+		sourceProviderType: nvarchar(50)
+		lineageTag: d77c5835-2b66-4bf8-9fee-b40d96c85109
+		summarizeBy: none
+		sourceColumn: City
+
+		annotation SummarizationSetBy = Automatic
+
+	column State
+		dataType: string
+		sourceProviderType: nvarchar(50)
+		lineageTag: 952b0589-efdd-4c55-a657-2e54c09563ca
+		summarizeBy: none
+		sourceColumn: State
+
+		annotation SummarizationSetBy = Automatic
+
+	column StateFull
+		dataType: string
+		sourceProviderType: nvarchar(50)
+		lineageTag: 2ff86c76-ede7-45bb-8ffc-537a89924465
+		summarizeBy: none
+		sourceColumn: StateFull
+
+		annotation SummarizationSetBy = Automatic
+
+	column ZipCode
+		dataType: string
+		sourceProviderType: nvarchar(50)
+		lineageTag: 8a64e11a-c5d8-448a-8156-5d23f231d246
+		summarizeBy: none
+		sourceColumn: ZipCode
+
+		annotation SummarizationSetBy = Automatic
+
+	column Country
+		dataType: string
+		sourceProviderType: nvarchar(50)
+		lineageTag: 2acfa908-8738-4e1b-97a2-a668cc523b6e
+		summarizeBy: none
+		sourceColumn: Country
+
+		annotation SummarizationSetBy = Automatic
+
+	column CountryFull
+		dataType: string
+		sourceProviderType: nvarchar(50)
+		lineageTag: 8be0f8be-b19c-4678-a930-bb82a4e57f34
+		summarizeBy: none
+		sourceColumn: CountryFull
+
+		annotation SummarizationSetBy = Automatic
+
+	column Birthday
+		dataType: dateTime
+		formatString: General Date
+		sourceProviderType: datetime2
+		lineageTag: fb33872c-ba6a-4e76-bbcf-7b9ebf564bb6
+		summarizeBy: none
+		sourceColumn: Birthday
+
+		variation Variation
+			isDefault
+			relationship: 4a877577-0204-4397-ad98-50c017f95fdd
+			defaultHierarchy: LocalDateTable_a23af26e-b87a-4286-99f3-b82d8333c71b.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	column Age
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 04b204fe-cbe4-40f5-95ab-b284bfa301ba
+		summarizeBy: sum
+		sourceColumn: Age
+
+		annotation SummarizationSetBy = Automatic
+
+	column Occupation
+		dataType: string
+		sourceProviderType: nvarchar(100)
+		lineageTag: 6d3a53e5-6968-404f-82ec-90090b5cc24d
+		summarizeBy: none
+		sourceColumn: Occupation
+
+		annotation SummarizationSetBy = Automatic
+
+	column Company
+		dataType: string
+		sourceProviderType: nvarchar(50)
+		lineageTag: ba9b5534-391f-45d2-8afd-af2f78a707cd
+		summarizeBy: none
+		sourceColumn: Company
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column Vehicle
+		dataType: string
+		sourceProviderType: nvarchar(50)
+		lineageTag: 13514e90-79a4-431b-a483-72f6000b7a9e
+		summarizeBy: none
+		sourceColumn: Vehicle
+
+		annotation SummarizationSetBy = Automatic
+
+	column Latitude
+		dataType: double
+		sourceProviderType: float
+		lineageTag: d63f982f-d145-4604-8e18-79ad52aec726
+		summarizeBy: sum
+		sourceColumn: Latitude
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Longitude
+		dataType: double
+		sourceProviderType: float
+		lineageTag: 7f53fa7b-aaf1-4d33-ba4c-5dfde9c7a340
+		summarizeBy: sum
+		sourceColumn: Longitude
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Continent
+		dataType: string
+		sourceProviderType: nvarchar(50)
+		lineageTag: 4f03bd65-4211-4f6b-999a-652fa5fb25fc
+		summarizeBy: none
+		sourceColumn: Continent
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'dim Customer' = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("BISERVER2", "Contoso 1M", [CommandTimeout=#duration(0, 0, 1, 0)]),
+				    Data_Customer = Source{[Schema="Data",Item="Customer"]}[Data]
+				in
+				    Data_Customer
+
+	changedProperty = Name
+
+	annotation PBI_ResultType = Table
+

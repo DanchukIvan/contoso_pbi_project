@@ -1,0 +1,48 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	discourageImplicitMeasures
+	sourceQueryCulture: en-US
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation PBI_QueryOrder = ["dim Orders","dim Product","dim Customer","dim Date","dim Store","dim Currency exchange","dim Product sales share","dim Sales KPI","dim RFM codes","fct Sales","Top-bottom mode","Calculation mode","Measures setup","Last refresh"]
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+annotation PBIDesktopVersion = 2.131.1203.0 (24.07)
+
+annotation PBI_ProTooling = ["DaxQueryView_Desktop","CalcGroup","DevMode"]
+
+ref table 'dim Orders'
+ref table 'dim Product'
+ref table 'dim Customer'
+ref table 'dim Date'
+ref table 'dim Store'
+ref table 'dim Currency exchange'
+ref table 'dim Product sales share'
+ref table 'dim Sales KPI'
+ref table 'dim RFM codes'
+ref table 'fct Sales'
+ref table DateTableTemplate_f29d9b1d-0e4d-4b87-b53a-0c798fda89ba
+ref table LocalDateTable_6233f2ff-1ea0-4c10-9889-1f3a0ccebff8
+ref table LocalDateTable_a23af26e-b87a-4286-99f3-b82d8333c71b
+ref table LocalDateTable_36e70beb-9768-40d8-80cf-cce5b382b192
+ref table LocalDateTable_23f8fb3a-9496-4609-8daa-6f6afb5c780a
+ref table LocalDateTable_a2bc2b84-127f-4bcb-8f21-88d8d82d1744
+ref table LocalDateTable_66edb883-9bcd-41d2-9748-49bcfebbc12c
+ref table 'Top-bottom mode'
+ref table 'Calculation mode'
+ref table 'Positions quantity'
+ref table 'Top Bottom fields'
+ref table 'Currency and country distribution'
+ref table 'KPI Slice'
+ref table 'Measures slicer (for review & etc.)'
+ref table 'Measures setup'
+ref table 'Measures table'
+ref table 'Last refresh'
+ref table LocalDateTable_7d80ac78-3470-4e36-88fd-9ebf37f95f7d
+
+ref cultureInfo en-US
+

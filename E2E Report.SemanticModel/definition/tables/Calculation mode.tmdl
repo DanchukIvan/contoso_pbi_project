@@ -1,0 +1,22 @@
+table 'Calculation mode'
+	lineageTag: feed99cc-5c8a-429f-8452-07d883681370
+
+	column Mode
+		dataType: string
+		lineageTag: 662dbb54-dbc5-416b-a933-07a30cc0036d
+		summarizeBy: none
+		sourceColumn: Mode
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Calculation mode' = m
+		mode: import
+		source =
+				let
+				    Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i45WckwuKU3MUYrViVZyzkjMS08tVoqNBQA=", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [Mode = _t]),
+				    #"Changed Type" = Table.TransformColumnTypes(Source,{{"Mode", type text}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_ResultType = Table
+

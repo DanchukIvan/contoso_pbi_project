@@ -1,0 +1,30 @@
+table 'Top-bottom mode'
+	isHidden
+	lineageTag: 57442844-aaed-4f00-b2e6-8d961b5c15af
+
+	column Mode
+		dataType: string
+		isHidden
+		lineageTag: 296f86f0-0f89-4377-aadf-74e5b2db5b2b
+		summarizeBy: none
+		sourceColumn: Mode
+
+		changedProperty = IsHidden
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Top-bottom mode' = m
+		mode: import
+		source =
+				let
+				    Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i45WCskvUIrViVZyyi8pyc9Vio0FAA==", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [Mode = _t]),
+				    #"Changed Type" = Table.TransformColumnTypes(Source,{{"Mode", type text}})
+				in
+				    #"Changed Type"
+
+	changedProperty = IsHidden
+
+	annotation PBI_ResultType = Table
+

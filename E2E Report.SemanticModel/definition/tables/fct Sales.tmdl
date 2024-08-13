@@ -1,0 +1,185 @@
+table 'fct Sales'
+	lineageTag: 3e107543-26c0-4100-8bb5-6816d62c5e1c
+
+	column 'Order Number'
+		dataType: int64
+		isNullable: false
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: fee35bb9-3f67-409a-8dcf-14579f1ad29e
+		summarizeBy: none
+		sourceColumn: Order Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Line Number'
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: f43c6f6d-84cd-47d7-88e0-d1edcf70ad80
+		summarizeBy: sum
+		sourceColumn: Line Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Order Date'
+		dataType: dateTime
+		formatString: Long Date
+		sourceProviderType: date
+		lineageTag: ba8f1318-1607-418b-9d39-cc0ec463b446
+		summarizeBy: none
+		sourceColumn: Order Date
+
+		variation Variation
+			isDefault
+			relationship: e45f3ba7-4f66-4c10-a83e-9a9dbc3b873b
+			defaultHierarchy: LocalDateTable_a2bc2b84-127f-4bcb-8f21-88d8d82d1744.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Delivery Date'
+		dataType: dateTime
+		formatString: Long Date
+		sourceProviderType: date
+		lineageTag: 79d200f7-bdc5-4554-80d0-7721531cd04e
+		summarizeBy: none
+		sourceColumn: Delivery Date
+
+		variation Variation
+			isDefault
+			relationship: 05e748c5-98d5-42c7-b235-8a97289b1798
+			defaultHierarchy: LocalDateTable_66edb883-9bcd-41d2-9748-49bcfebbc12c.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column CustomerKey
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: f4be3915-5484-4a21-b189-5b806852fc79
+		summarizeBy: count
+		sourceColumn: CustomerKey
+
+		annotation SummarizationSetBy = Automatic
+
+	column StoreKey
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 39d8dce8-6988-450d-b9db-bad7c72c7d38
+		summarizeBy: count
+		sourceColumn: StoreKey
+
+		annotation SummarizationSetBy = Automatic
+
+	column ProductKey
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 6062f8fa-4a41-42e1-96c7-06dd7475eff8
+		summarizeBy: none
+		sourceColumn: ProductKey
+
+		annotation SummarizationSetBy = Automatic
+
+	column Quantity
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 0aab192d-df8a-42b1-966c-1dfe801eac01
+		summarizeBy: sum
+		sourceColumn: Quantity
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Unit Price'
+		dataType: decimal
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		sourceProviderType: money
+		lineageTag: 63ef2b3b-d2f8-4a46-ac12-9a457701d15f
+		summarizeBy: sum
+		sourceColumn: Unit Price
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	column 'Net Price'
+		dataType: decimal
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		sourceProviderType: money
+		lineageTag: 0e3cdcc6-3699-4c18-bc32-0f7afca17d48
+		summarizeBy: sum
+		sourceColumn: Net Price
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	column 'Unit Cost'
+		dataType: decimal
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		sourceProviderType: money
+		lineageTag: c6195296-55b2-4d2b-bf88-4cff4ddbd207
+		summarizeBy: sum
+		sourceColumn: Unit Cost
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	column 'Currency Code'
+		dataType: string
+		sourceProviderType: nchar
+		lineageTag: 43fd86b5-ba2b-4921-ab5e-f5629da4eb43
+		summarizeBy: none
+		sourceColumn: Currency Code
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Exchange Rate'
+		dataType: double
+		sourceProviderType: float
+		lineageTag: 46629095-5f7e-449f-9126-debe818b4362
+		summarizeBy: sum
+		sourceColumn: Exchange Rate
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'ABC score'
+		dataType: string
+		sourceProviderType: varchar(1)
+		lineageTag: eee0851d-6ed1-44ba-83da-558d504d1ccd
+		summarizeBy: none
+		sourceColumn: ABC score
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'RFM code'
+		dataType: string
+		sourceProviderType: varchar(72)
+		lineageTag: 083b84a9-58dc-4ec1-aac1-a5cddc2ca88d
+		summarizeBy: none
+		sourceColumn: RFM code
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'fct Sales' = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("BISERVER2", "Contoso 1M"),
+				    dbo_Sales = Source{[Schema="dbo",Item="Sales"]}[Data]
+				in
+				    dbo_Sales
+
+	changedProperty = Name
+
+	annotation PBI_ResultType = Table
+

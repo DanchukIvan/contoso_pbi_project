@@ -1,0 +1,158 @@
+table 'dim Store'
+	lineageTag: f0312e89-c59c-44ff-bd05-c6dd5f94a592
+
+	column StoreKey
+		dataType: int64
+		isNullable: false
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: ba7c03ee-b023-46b6-9017-5c83e7d31bd8
+		summarizeBy: none
+		sourceColumn: StoreKey
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Store Code'
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 5b03ffad-dd52-40c9-b424-0941405e100f
+		summarizeBy: count
+		sourceColumn: Store Code
+
+		annotation SummarizationSetBy = Automatic
+
+	column Country
+		dataType: string
+		sourceProviderType: nvarchar(50)
+		lineageTag: 8acc7950-3225-4653-ab1c-fa4b4db980ca
+		summarizeBy: none
+		sourceColumn: Country
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation __PBI_SemanticLinks = [{"LinkTarget":{"TableName":"dim Store","TableItemName":"Country (groups)","ObjectType":4},"LinkType":"UsedInGroup"}]
+
+	column State
+		dataType: string
+		sourceProviderType: nvarchar(50)
+		lineageTag: e4ee9924-1b03-45b6-af51-99dd3fb1f7d7
+		summarizeBy: none
+		sourceColumn: State
+
+		annotation SummarizationSetBy = Automatic
+
+	column Name
+		dataType: string
+		sourceProviderType: nvarchar(100)
+		lineageTag: 78d3509e-b88b-4192-acba-24bc89ea37a5
+		summarizeBy: none
+		sourceColumn: Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Square Meters'
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 417051ae-e4e5-4f1a-86c7-4bf790605f2b
+		summarizeBy: sum
+		sourceColumn: Square Meters
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Open Date'
+		dataType: dateTime
+		formatString: Long Date
+		sourceProviderType: date
+		lineageTag: ae128da5-b960-44fa-83b0-b987fb9c42db
+		summarizeBy: none
+		sourceColumn: Open Date
+
+		variation Variation
+			isDefault
+			relationship: a1aa8448-8468-4dcf-ad4e-a28180ff8dd5
+			defaultHierarchy: LocalDateTable_36e70beb-9768-40d8-80cf-cce5b382b192.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Close Date'
+		dataType: dateTime
+		formatString: Long Date
+		sourceProviderType: date
+		lineageTag: 2dbe47c4-6215-4282-8539-f9e7143f2972
+		summarizeBy: none
+		sourceColumn: Close Date
+
+		variation Variation
+			isDefault
+			relationship: 9893d99a-32bf-485b-b5b4-bc5250277aef
+			defaultHierarchy: LocalDateTable_23f8fb3a-9496-4609-8daa-6f6afb5c780a.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Status
+		dataType: string
+		sourceProviderType: nvarchar(50)
+		lineageTag: ce383d20-69e4-41fd-903e-806b212cf9d0
+		summarizeBy: none
+		sourceColumn: Status
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Country (groups)' =
+			SWITCH(
+				TRUE,
+				ISBLANK('dim Store'[Country]),
+				"(Blank)",
+				'dim Store'[Country] IN {"France",
+					"Germany",
+					"Italy",
+					"Netherlands",
+					"United Kingdom"},
+				"Europe and UK",
+				'dim Store'[Country]
+			)
+		dataType: string
+		lineageTag: fabacd3e-3a80-4164-a814-49a7e37509cc
+		summarizeBy: none
+		isDataTypeInferred
+
+		extendedProperty GroupingMetadata =
+				{
+				  "groupedColumns": [
+				    {
+				      "Column": {
+				        "Expression": {
+				          "SourceRef": {
+				            "Entity": "dim Store"
+				          }
+				        },
+				        "Property": "Country"
+				      }
+				    }
+				  ],
+				  "version": 0
+				}
+
+		annotation GroupingDesignState = {"Version":0,"Sources":[{"Name":"d","Entity":"dim Store"}],"GroupedColumns":[{"Column":{"Expression":{"SourceRef":{"Source":"d"}},"Property":"Country"}}],"GroupItems":[{"DisplayName":"(Blank)","BlankDefaultPlaceholder":true},{"DisplayName":"Europe and UK","Expression":{"In":{"Expressions":[{"Column":{"Expression":{"SourceRef":{"Source":"d"}},"Property":"Country"}}],"Values":[[{"Literal":{"Value":"'France'"}}],[{"Literal":{"Value":"'Germany'"}}],[{"Literal":{"Value":"'Italy'"}}],[{"Literal":{"Value":"'Netherlands'"}}],[{"Literal":{"Value":"'United Kingdom'"}}]]}}}]}
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'dim Store' = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("BISERVER2", "Contoso 1M", [CommandTimeout=#duration(0, 0, 1, 0)]),
+				    Data_Store = Source{[Schema="Data",Item="Store"]}[Data]
+				in
+				    Data_Store
+
+	changedProperty = Name
+
+	annotation PBI_ResultType = Table
+

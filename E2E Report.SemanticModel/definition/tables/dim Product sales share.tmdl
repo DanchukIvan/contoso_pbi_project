@@ -1,0 +1,65 @@
+table 'dim Product sales share'
+	lineageTag: 8eafed18-b437-49a9-b233-4247ceebd254
+
+	column 'Order Year'
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 7891d1e7-f9d1-4d9c-85ab-2dcfc3bea50d
+		summarizeBy: none
+		sourceColumn: Order Year
+
+		annotation SummarizationSetBy = Automatic
+
+	column ProductKey
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 08739cc9-24a7-4234-88f6-52051d32f0fb
+		summarizeBy: none
+		sourceColumn: ProductKey
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Sales Share, %'
+		dataType: double
+		formatString: 0.00%;-0.00%;0.00%
+		sourceProviderType: real
+		lineageTag: 01cef464-8442-49e2-9d59-50e0a5075d16
+		summarizeBy: sum
+		sourceColumn: Sales Share, %
+
+		annotation SummarizationSetBy = Automatic
+
+	column Brand
+		dataType: string
+		sourceProviderType: nvarchar(50)
+		lineageTag: 35391b54-a9e8-471e-87d6-bcca2c2c1ff5
+		summarizeBy: none
+		sourceColumn: Brand
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'KPI Size' = DIVIDE([Sales Share, %], 100) * RELATED('dim Sales KPI'[Sales KPI])
+		dataType: double
+		lineageTag: 367daf70-b6c4-4666-974c-3d54a53459ba
+		summarizeBy: sum
+		isDataTypeInferred
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition 'dim Product sales share' = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("BISERVER2", "Contoso 1M"),
+				    Data_ProductSalesShare = Source{[Schema="Data",Item="ProductSalesShare"]}[Data]
+				in
+				    Data_ProductSalesShare
+
+	changedProperty = Name
+
+	annotation PBI_ResultType = Table
+

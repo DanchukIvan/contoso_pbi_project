@@ -1,0 +1,56 @@
+table 'Currency and country distribution'
+	isHidden
+	lineageTag: b26b9e20-29aa-4f8d-b4e6-c7aebc01785b
+
+	column 'Currency and country distribution'
+		dataType: string
+		isHidden
+		lineageTag: e87ecb8a-300d-4f7a-9c0d-39c8ec32cad0
+		summarizeBy: none
+		isDataTypeInferred
+		sourceColumn: [Value1]
+		sortByColumn: 'Currency and country distribution Order'
+
+		relatedColumnDetails
+			groupByColumn: 'Currency and country distribution Fields'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Currency and country distribution Fields'
+		dataType: string
+		isHidden
+		lineageTag: 1b218935-b3ce-4640-b5ed-163c90e41e7a
+		summarizeBy: none
+		isDataTypeInferred
+		sourceColumn: [Value2]
+		sortByColumn: 'Currency and country distribution Order'
+
+		extendedProperty ParameterMetadata =
+				{
+				  "kind": 2,
+				  "version": 3
+				}
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Currency and country distribution Order'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 88a32742-cb1a-4b6b-89e5-5fe3c78420eb
+		summarizeBy: sum
+		isDataTypeInferred
+		sourceColumn: [Value3]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Currency and country distribution' = calculated
+		mode: import
+		source =
+				{
+				    ("Channel distr", NAMEOF('dim Store'[Country]), 0),
+				    ("Currency", NAMEOF('fct Sales'[Currency Code]), 1)
+				}
+
+	annotation PBI_Id = 052345f7d2f640a8bb1d524cda232084
+

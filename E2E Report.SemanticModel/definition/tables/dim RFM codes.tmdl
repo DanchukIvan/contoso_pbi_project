@@ -1,0 +1,44 @@
+table 'dim RFM codes'
+	lineageTag: a84f14a5-6e72-4e4c-9728-8a8c8664c509
+
+	column Rank
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: a96ede80-0014-4f53-a4b4-c54de41a9ba1
+		summarizeBy: none
+		sourceColumn: Rank
+
+		annotation SummarizationSetBy = Automatic
+
+	column Segment
+		dataType: string
+		sourceProviderType: varchar(50)
+		lineageTag: dcbdc022-9e42-401f-8708-cb75a13a842e
+		summarizeBy: none
+		sourceColumn: Segment
+
+		annotation SummarizationSetBy = Automatic
+
+	column Codes
+		dataType: string
+		sourceProviderType: varchar(50)
+		lineageTag: 788e4f84-6db9-41ab-af95-6fa6b3b507cc
+		summarizeBy: none
+		sourceColumn: Codes
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'dim RFM codes' = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("BISERVER2", "Contoso 1M"),
+				    #"Data_RFM codes" = Source{[Schema="Data",Item="RFM codes"]}[Data]
+				in
+				    #"Data_RFM codes"
+
+	changedProperty = Name
+
+	annotation PBI_ResultType = Table
+

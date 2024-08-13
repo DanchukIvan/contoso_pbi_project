@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "E2E Report"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "557227ab-6ec7-4d98-80b2-bd1e2ac6a8a6"
+  }
+}

@@ -1,0 +1,60 @@
+table 'dim Currency exchange'
+	lineageTag: 9d3bb4f6-38f4-44ae-8e2c-7ad0f2b68591
+
+	column Date
+		dataType: dateTime
+		isNullable: false
+		formatString: Long Date
+		sourceProviderType: date
+		lineageTag: 9be56c14-6165-45c6-bb6a-611b4f8255e7
+		summarizeBy: none
+		sourceColumn: Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column FromCurrency
+		dataType: string
+		isNullable: false
+		sourceProviderType: nchar
+		lineageTag: 5d591743-cf65-4e00-b85b-99750848163d
+		summarizeBy: none
+		sourceColumn: FromCurrency
+
+		annotation SummarizationSetBy = Automatic
+
+	column ToCurrency
+		dataType: string
+		isNullable: false
+		sourceProviderType: nchar
+		lineageTag: a84b2046-71b4-4c1b-a4c5-0716460d9792
+		summarizeBy: none
+		sourceColumn: ToCurrency
+
+		annotation SummarizationSetBy = Automatic
+
+	column Exchange
+		dataType: double
+		sourceProviderType: float
+		lineageTag: a276b491-e25a-4c7a-ba44-6efaca61d8f6
+		summarizeBy: sum
+		sourceColumn: Exchange
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition 'dim Currency exchange' = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("BISERVER2", "Contoso 1M", [CommandTimeout=#duration(0, 0, 1, 0)]),
+				    Data_CurrencyExchange = Source{[Schema="Data",Item="CurrencyExchange"]}[Data]
+				in
+				    Data_CurrencyExchange
+
+	changedProperty = Name
+
+	annotation PBI_ResultType = Table
+

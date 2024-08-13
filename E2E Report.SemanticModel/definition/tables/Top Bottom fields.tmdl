@@ -1,0 +1,57 @@
+table 'Top Bottom fields'
+	isHidden
+	lineageTag: 1f7d058d-122c-4920-a49d-e9e60b05315f
+
+	column 'Top Bottom fields'
+		dataType: string
+		isHidden
+		lineageTag: d40b4ab0-3d49-4b2b-9156-c4cb07d8ad5a
+		summarizeBy: none
+		isDataTypeInferred
+		sourceColumn: [Value1]
+		sortByColumn: 'Top Bottom fields Order'
+
+		relatedColumnDetails
+			groupByColumn: 'Top Bottom fields Fields'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Top Bottom fields Fields'
+		dataType: string
+		isHidden
+		lineageTag: 4b9827cb-3274-4229-a825-3f52a0a3e2e7
+		summarizeBy: none
+		isDataTypeInferred
+		sourceColumn: [Value2]
+		sortByColumn: 'Top Bottom fields Order'
+
+		extendedProperty ParameterMetadata =
+				{
+				  "kind": 2,
+				  "version": 3
+				}
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Top Bottom fields Order'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 8db00d2b-0ecb-405c-a94b-1cc50d86285d
+		summarizeBy: sum
+		isDataTypeInferred
+		sourceColumn: [Value3]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Top Bottom fields' = calculated
+		mode: import
+		source =
+				{
+				    ("Customers", NAMEOF('dim Customer'[Company]), 0),
+				    ("Store", NAMEOF('dim Store'[Name]), 1),
+				    ("Brand", NAMEOF('dim Product'[Brand]), 2)
+				}
+
+	annotation PBI_Id = d98d9e952c6f4da3b1904f763e95de89
+

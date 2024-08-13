@@ -1,0 +1,153 @@
+table 'dim Product'
+	lineageTag: 5b2da749-9eca-429c-b417-562cd6151e47
+
+	column ProductKey
+		dataType: int64
+		isNullable: false
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 0410ff88-16bf-4a5c-b564-26a9ae693ade
+		summarizeBy: none
+		sourceColumn: ProductKey
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Product Code'
+		dataType: string
+		sourceProviderType: nvarchar(255)
+		lineageTag: 84dddd81-3adc-4adc-8343-9b40e2f0e31e
+		summarizeBy: none
+		sourceColumn: Product Code
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Product Name'
+		dataType: string
+		sourceProviderType: nvarchar(500)
+		lineageTag: 7d59ddf4-ba4f-439c-8650-4c4fffd7c77f
+		summarizeBy: none
+		sourceColumn: Product Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column Manufacturer
+		dataType: string
+		sourceProviderType: nvarchar(50)
+		lineageTag: 0ebd73d4-f83a-43f7-970f-46d020276566
+		summarizeBy: none
+		sourceColumn: Manufacturer
+
+		annotation SummarizationSetBy = Automatic
+
+	column Brand
+		dataType: string
+		sourceProviderType: nvarchar(50)
+		lineageTag: 52049b65-4125-4516-a4cd-c6953da6e5c2
+		summarizeBy: none
+		sourceColumn: Brand
+
+		annotation SummarizationSetBy = Automatic
+
+	column Color
+		dataType: string
+		isNullable: false
+		sourceProviderType: nvarchar(20)
+		lineageTag: ef25c0bf-4442-4d98-b5e1-fc2e78f89277
+		summarizeBy: none
+		sourceColumn: Color
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Weight Unit Measure'
+		dataType: string
+		sourceProviderType: nvarchar(20)
+		lineageTag: 87ff9bac-43ff-41bd-b1e9-638b124ce9bb
+		summarizeBy: none
+		sourceColumn: Weight Unit Measure
+
+		annotation SummarizationSetBy = Automatic
+
+	column Weight
+		dataType: double
+		sourceProviderType: float
+		lineageTag: 25da1ff6-bfbb-4c4f-8712-cddf75c743e2
+		summarizeBy: sum
+		sourceColumn: Weight
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Unit Cost'
+		dataType: decimal
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		sourceProviderType: money
+		lineageTag: 1c24748e-a927-4ed4-905c-8752baf2f039
+		summarizeBy: sum
+		sourceColumn: Unit Cost
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	column 'Unit Price'
+		dataType: decimal
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		sourceProviderType: money
+		lineageTag: 72a3eb18-2dbf-448a-8609-29cb53d18d61
+		summarizeBy: sum
+		sourceColumn: Unit Price
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	column 'Subcategory Code'
+		dataType: string
+		sourceProviderType: nvarchar(100)
+		lineageTag: e0f67323-fb98-483e-93ac-01714a078420
+		summarizeBy: none
+		sourceColumn: Subcategory Code
+
+		annotation SummarizationSetBy = Automatic
+
+	column Subcategory
+		dataType: string
+		sourceProviderType: nvarchar(50)
+		lineageTag: 9c1715ff-6b29-4c49-bb8a-aed7bee2db8f
+		summarizeBy: none
+		sourceColumn: Subcategory
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Category Code'
+		dataType: string
+		sourceProviderType: nvarchar(100)
+		lineageTag: f6e6a9dd-a39f-4903-a5e9-667405e72e26
+		summarizeBy: none
+		sourceColumn: Category Code
+
+		annotation SummarizationSetBy = Automatic
+
+	column Category
+		dataType: string
+		sourceProviderType: nvarchar(30)
+		lineageTag: e2f0ed3f-be64-405d-851c-b5324250a562
+		summarizeBy: none
+		sourceColumn: Category
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'dim Product' = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("BISERVER2", "Contoso 1M", [CommandTimeout=#duration(0, 0, 1, 0)]),
+				    Data_Product = Source{[Schema="Data",Item="Product"]}[Data]
+				in
+				    Data_Product
+
+	changedProperty = Name
+
+	annotation PBI_ResultType = Table
+

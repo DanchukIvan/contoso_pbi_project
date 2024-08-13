@@ -1,0 +1,94 @@
+relationship 23e45d25-62d8-4d78-93d7-54685df2db82
+	crossFilteringBehavior: bothDirections
+	fromColumn: 'dim Orders'.CustomerKey
+	toColumn: 'dim Customer'.CustomerKey
+
+	annotation PBI_IsFromSource = FS
+
+relationship 9a2af276-b59f-4207-ae02-7ac3c3abda90
+	relyOnReferentialIntegrity
+	fromColumn: 'dim Orders'.'Order Date'
+	toColumn: 'dim Date'.Date
+
+	annotation PBI_IsFromSource = FS
+
+relationship 9bf1b1da-61fc-4fcb-95a7-289e06db3f88
+	relyOnReferentialIntegrity
+	fromColumn: 'dim Orders'.StoreKey
+	toColumn: 'dim Store'.StoreKey
+
+	annotation PBI_IsFromSource = FS
+
+relationship 2b573fa2-4f4c-4952-8693-f18c4d496d23
+	fromColumn: 'dim Currency exchange'.Date
+	toColumn: 'dim Date'.Date
+
+relationship fbbdee85-ada8-407f-bd6a-6782169d38bb
+	relyOnReferentialIntegrity
+	fromColumn: 'dim Product sales share'.ProductKey
+	toColumn: 'dim Product'.ProductKey
+
+relationship eaf00ea4-40de-4e9c-840c-cd9c0df78afb
+	crossFilteringBehavior: bothDirections
+	relyOnReferentialIntegrity
+	fromColumn: 'dim Date'.Year
+	toColumn: 'dim Sales KPI'.'Report Year'
+
+relationship 06b7b449-c795-4211-bfd7-454421725b3d
+	relyOnReferentialIntegrity
+	fromColumn: 'dim Product sales share'.'Order Year'
+	toColumn: 'dim Sales KPI'.'Report Year'
+
+relationship 0844a6e6-90c4-435a-921f-22b94abe48cf
+	relyOnReferentialIntegrity
+	fromColumn: 'fct Sales'.ProductKey
+	toColumn: 'dim Product'.ProductKey
+
+relationship 79e0e97f-92a9-480f-8c20-34be15aeec23
+	relyOnReferentialIntegrity
+	fromColumn: 'fct Sales'.'Order Number'
+	toColumn: 'dim Orders'.OrderKey
+
+relationship f968f7da-895a-407a-ac37-9a4cf43758be
+	fromColumn: 'fct Sales'.'RFM code'
+	toColumn: 'dim RFM codes'.Codes
+
+relationship 712c8da9-c1d7-43e4-ad99-7029c1cb6aad
+	joinOnDateBehavior: datePartOnly
+	fromColumn: 'dim Orders'.'Delivery Date'
+	toColumn: LocalDateTable_6233f2ff-1ea0-4c10-9889-1f3a0ccebff8.Date
+
+relationship 4a877577-0204-4397-ad98-50c017f95fdd
+	joinOnDateBehavior: datePartOnly
+	fromColumn: 'dim Customer'.Birthday
+	toColumn: LocalDateTable_a23af26e-b87a-4286-99f3-b82d8333c71b.Date
+
+relationship a1aa8448-8468-4dcf-ad4e-a28180ff8dd5
+	joinOnDateBehavior: datePartOnly
+	fromColumn: 'dim Store'.'Open Date'
+	toColumn: LocalDateTable_36e70beb-9768-40d8-80cf-cce5b382b192.Date
+
+relationship 9893d99a-32bf-485b-b5b4-bc5250277aef
+	joinOnDateBehavior: datePartOnly
+	fromColumn: 'dim Store'.'Close Date'
+	toColumn: LocalDateTable_23f8fb3a-9496-4609-8daa-6f6afb5c780a.Date
+
+relationship e45f3ba7-4f66-4c10-a83e-9a9dbc3b873b
+	joinOnDateBehavior: datePartOnly
+	fromColumn: 'fct Sales'.'Order Date'
+	toColumn: LocalDateTable_a2bc2b84-127f-4bcb-8f21-88d8d82d1744.Date
+
+relationship 05e748c5-98d5-42c7-b235-8a97289b1798
+	joinOnDateBehavior: datePartOnly
+	fromColumn: 'fct Sales'.'Delivery Date'
+	toColumn: LocalDateTable_66edb883-9bcd-41d2-9748-49bcfebbc12c.Date
+
+relationship 75635631-f079-4d72-aa99-5562c21f9bb1
+	joinOnDateBehavior: datePartOnly
+	fromColumn: 'Last refresh'.'Last up to date'
+	toColumn: LocalDateTable_7d80ac78-3470-4e36-88fd-9ebf37f95f7d.Date
+
+relationship a1b48a74-f301-4bb6-b7b3-4554cc88271f
+	fromColumn: 'Measures slicer (for review & etc.)'.Value4
+	toColumn: 'Measures setup'.Setup
+

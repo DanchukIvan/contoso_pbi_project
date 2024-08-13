@@ -1,0 +1,87 @@
+table 'dim Orders'
+	lineageTag: c232dcaf-c942-457c-a8a3-30b520a637ba
+
+	column OrderKey
+		dataType: int64
+		isNullable: false
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: ebe7952c-4013-476a-8b51-6a23b494f590
+		summarizeBy: none
+		sourceColumn: OrderKey
+
+		annotation SummarizationSetBy = Automatic
+
+	column CustomerKey
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 8ed60b8e-f68f-4110-8fbf-52d0cad49225
+		summarizeBy: none
+		sourceColumn: CustomerKey
+
+		annotation SummarizationSetBy = Automatic
+
+	column StoreKey
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: e62f0087-0ab5-44b4-a624-70ccd88bfd1a
+		summarizeBy: none
+		sourceColumn: StoreKey
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Order Date'
+		dataType: dateTime
+		formatString: dd/mm/yyyy
+		sourceProviderType: date
+		lineageTag: fe0d4566-ddcc-4d64-a525-f7f2028e1d49
+		summarizeBy: none
+		sourceColumn: Order Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation PBI_FormatHint = {"isDateTimeCustom":true}
+
+	column 'Delivery Date'
+		dataType: dateTime
+		formatString: Long Date
+		sourceProviderType: date
+		lineageTag: fb86011c-7df8-414d-ba8d-455692114586
+		summarizeBy: none
+		sourceColumn: Delivery Date
+
+		variation Variation
+			isDefault
+			relationship: 712c8da9-c1d7-43e4-ad99-7029c1cb6aad
+			defaultHierarchy: LocalDateTable_6233f2ff-1ea0-4c10-9889-1f3a0ccebff8.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Currency Code'
+		dataType: string
+		sourceProviderType: nchar
+		lineageTag: 001ee0eb-6e4a-4176-92c9-dbd0527d3e4c
+		summarizeBy: none
+		sourceColumn: Currency Code
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'dim Orders' = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("BISERVER2", "Contoso 1M", [CommandTimeout=#duration(0, 0, 1, 0)]),
+				    Data_Orders = Source{[Schema="Data",Item="Orders"]}[Data]
+				in
+				    Data_Orders
+
+	changedProperty = Name
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,31 @@
+table 'Positions quantity'
+	isHidden
+	lineageTag: f2a98916-5917-47fe-9993-e79d694933db
+
+	measure 'Positions quantity Value' = SELECTEDVALUE('Positions quantity'[Positions quantity], 5)
+		formatString: 0
+		isHidden
+		lineageTag: 119b98a2-d12b-45fb-b5d6-c7507ec6c394
+
+	column 'Positions quantity'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 00996750-26a6-45f0-86a4-f7c4a8edce08
+		summarizeBy: none
+		isDataTypeInferred
+		sourceColumn: [Value]
+
+		extendedProperty ParameterMetadata =
+				{
+				  "version": 0
+				}
+
+		annotation SummarizationSetBy = User
+
+	partition 'Positions quantity' = calculated
+		mode: import
+		source = GENERATESERIES(0, 10, 1)
+
+	annotation PBI_Id = d570d99927dc45b795dfcc5f6e9f24b7
+

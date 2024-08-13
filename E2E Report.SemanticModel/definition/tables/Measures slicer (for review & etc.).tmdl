@@ -1,0 +1,72 @@
+table 'Measures slicer (for review & etc.)'
+	isHidden
+	lineageTag: 05142dc8-b46b-4b44-b6c7-c2b929409aab
+
+	column 'Review measure slicer'
+		dataType: string
+		isHidden
+		lineageTag: d303013e-8595-4ee9-8c4b-f277f961bfed
+		summarizeBy: none
+		isDataTypeInferred
+		sourceColumn: [Value1]
+		sortByColumn: 'Review measure slicer Order'
+
+		relatedColumnDetails
+			groupByColumn: 'Review measure slicer Fields'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Review measure slicer Fields'
+		dataType: string
+		isHidden
+		lineageTag: 2a1f0778-706e-4b38-b4b8-5f8abe6a91a2
+		summarizeBy: none
+		isDataTypeInferred
+		sourceColumn: [Value2]
+		sortByColumn: 'Review measure slicer Order'
+
+		extendedProperty ParameterMetadata =
+				{
+				  "kind": 2,
+				  "version": 3
+				}
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Review measure slicer Order'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 6382595f-8cd1-40be-ae4e-684b8d7f093c
+		summarizeBy: sum
+		isDataTypeInferred
+		sourceColumn: [Value3]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Value4
+		dataType: string
+		isHidden
+		lineageTag: 05e2f72b-8e49-4fce-86cb-306dc19da49b
+		summarizeBy: none
+		isNameInferred
+		isDataTypeInferred
+		sourceColumn: [Value4]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Measures slicer (for review & etc.)' = calculated
+		mode: import
+		source =
+				{
+				    ("Sales", NAMEOF('Measures table'[Total sales CY]), 0, "Regular"),
+				    ("Net profit", NAMEOF('Measures table'[Net profit CY]), 1, "Regular"),
+				    ("Purchases", NAMEOF('Measures table'[Purchases CY]), 2, "Regular"),
+				    ("Average bill", NAMEOF('Measures table'[Average bill CY]), 0, "Cust specific"),
+				    ("Daily purchases", NAMEOF('Measures table'[Purchases per day CY]), 1, "Cust specific"),
+				    ("New customers", NAMEOF('Measures table'[New customers]), 2, "Cust specific"),
+				    ("12m customers activity", NAMEOF('Measures table'[12m customer activity, %]), 3, "Cust specific")
+				}
+
+	annotation PBI_Id = 5bac2cb4742f4cbe843ecd07d31f1413
+

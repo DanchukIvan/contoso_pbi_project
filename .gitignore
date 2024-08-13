@@ -1,2 +1,3 @@
-.gitignore
 Dashboards in dev/*
+**/.pbi/localSettings.json
+**/.pbi/cache.abf

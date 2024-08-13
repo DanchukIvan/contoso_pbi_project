@@ -1,0 +1,35 @@
+EVALUATE
+VAR StartDate = STARTOFYEAR('dim Date'[Date])
+VAR CurrentMonthNumber = MAX('dim Date'[Month Number])
+VAR Color = IF([Average bill CY vs LY, %] > 0, "#3E5D5D", "#5C3031")
+VAR LastYearValue = CALCULATE([Average bill LY], 'dim Date'[Month Number] = 12)
+VAR ContextChangeWrapper =
+// "Date" field used in this example along the X axis
+    CALCULATETABLE(
+		VAR XMinDate = MIN('dim Date'[Month Number])
+		VAR XMaxDate = MAX('dim Date'[Month Number])
+		// Obtain overall min and overall max measure values when evaluated for each date
+		VAR YMinValue = MIN(MINX(Values('dim Date'[Month Number]),[Average bill CY]), LastYearValue)
+		VAR YMaxValue = MAX(MAXX(Values('dim Date'[Month Number]),[Average bill CY]), LastYearValue)
+		VAR YDelim = YMaxValue - YMinValue
+		RETURN
+		// Build table of X & Y coordinates and fit to 50 x 150 viewbox
+		VAR SparklineTable = ADDCOLUMNS(
+			SUMMARIZE('fct Sales','dim Date'[Month Number]),
+				"X",INT(150 * DIVIDE('dim Date'[Month Number] - XMinDate, XMaxDate - XMinDate)),
+				"Y",
+				VAR FirstMonth = 1 = 'dim Date'[Month Number]
+				VAR Multiplier = IF(FirstMonth, DIVIDE(LastYearValue - YMinValue, YDelim), DIVIDE([Average bill CY] - YMinValue,YDelim))
+				RETURN
+				INT(50 * Multiplier),
+				"Multiplier", IF(1 = 'dim Date'[Month Number], DIVIDE(LastYearValue - YMinValue, YDelim), DIVIDE([Average bill CY] - YMinValue,YDelim)),
+				"Delim", YDelim,
+				"Avg bill CY", [Average bill CY],
+				"First value", LastYearValue,
+				"Max", YMaxValue,
+				"Min", YMinValue)
+		RETURN
+			SparklineTable,
+		'dim Date'[Year] = 2018, 'dim Date'[Date] <= DATE(2018, 9, 07))
+RETURN
+	ContextChangeWrapper

@@ -1,0 +1,37 @@
+/// Вычисляемая таблица для отображения времени обновления данных.
+table 'Last refresh'
+	isHidden
+	lineageTag: 8b66e874-27be-4004-82df-e4d98bd18cad
+
+	column 'Last up to date'
+		dataType: dateTime
+		isHidden
+		formatString: General Date
+		lineageTag: 45261bc5-01ae-47e2-a3fd-e74b822f62cd
+		summarizeBy: none
+		sourceColumn: Last up to date
+
+		variation Variation
+			isDefault
+			relationship: 75635631-f079-4d72-aa99-5562c21f9bb1
+			defaultHierarchy: LocalDateTable_7d80ac78-3470-4e36-88fd-9ebf37f95f7d.'Date Hierarchy'
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Last refresh' = m
+		mode: import
+		source =
+				let
+				    Source = DateTime.LocalNow(),
+				    Final = Table.TransformColumnTypes(Table.RenameColumns(#table(1, {{Source}}),{{"Column1", "Last up to date"}}),{{"Last up to date", type datetime}})
+				in
+				    Final
+
+	changedProperty = IsHidden
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,271 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 1436.6439247001551,
+        "y": 0
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 1480.188293781393,
+            "y": 277.41239627043444
+          },
+          "nodeIndex": "Calculation mode",
+          "nodeLineageTag": "feed99cc-5c8a-429f-8452-07d883681370",
+          "size": {
+            "height": 104,
+            "width": 234
+          },
+          "zIndex": 14
+        },
+        {
+          "location": {
+            "x": 1741.2258291127255,
+            "y": 485.73410477013027
+          },
+          "nodeIndex": "Positions quantity",
+          "nodeLineageTag": "f2a98916-5917-47fe-9993-e79d694933db",
+          "size": {
+            "height": 145,
+            "width": 234
+          },
+          "zIndex": 15
+        },
+        {
+          "location": {
+            "x": 1486.7363168480372,
+            "y": 414.39142079981042
+          },
+          "nodeIndex": "Top Bottom fields",
+          "nodeLineageTag": "1f7d058d-122c-4920-a49d-e9e60b05315f",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 16
+        },
+        {
+          "location": {
+            "x": 2011.5237743861871,
+            "y": 243.797194808904
+          },
+          "nodeIndex": "Currency and country distribution",
+          "nodeLineageTag": "b26b9e20-29aa-4f8d-b4e6-c7aebc01785b",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 17
+        },
+        {
+          "location": {
+            "x": 2009.6175404646287,
+            "y": 418.74813072560988
+          },
+          "nodeIndex": "KPI Slice",
+          "nodeLineageTag": "5cf8bd63-8ffc-4b3c-91ca-482b8df566db",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 19
+        },
+        {
+          "location": {
+            "x": 1733.8203456557244,
+            "y": 49.727155254985874
+          },
+          "nodeIndex": "Measures setup",
+          "nodeLineageTag": "d60314d0-d319-4f3b-b80c-6d43b34bb778",
+          "size": {
+            "height": 104,
+            "width": 234
+          },
+          "zIndex": 13
+        },
+        {
+          "location": {
+            "x": 1477.5634376192388,
+            "y": 47.797409712172225
+          },
+          "nodeIndex": "Measures table",
+          "nodeLineageTag": "c067b33d-ee1e-4dd3-85a8-202cd7371c41",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 12
+        },
+        {
+          "location": {
+            "x": 1735.803752143968,
+            "y": 354.198921756195
+          },
+          "nodeIndex": "Top-bottom mode",
+          "nodeLineageTag": "57442844-aaed-4f00-b2e6-8d961b5c15af",
+          "size": {
+            "height": 104,
+            "width": 234
+          },
+          "zIndex": 18
+        },
+        {
+          "location": {
+            "x": 2475.6594914058765,
+            "y": 301.22380767501977
+          },
+          "nodeIndex": "fct Sales",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 11
+        },
+        {
+          "location": {
+            "x": 2488.3261580725434,
+            "y": 57.223807675019771
+          },
+          "nodeIndex": "dim RFM codes",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 10
+        },
+        {
+          "location": {
+            "x": 2769.8749921372423,
+            "y": 505.23271256114197
+          },
+          "nodeIndex": "dim Product",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 9
+        },
+        {
+          "location": {
+            "x": 2492.7499842744846,
+            "y": 927.81796995091565
+          },
+          "nodeIndex": "dim Product sales share",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 8
+        },
+        {
+          "location": {
+            "x": 3264.6606291607404,
+            "y": 619.63593990183153
+          },
+          "nodeIndex": "dim Store",
+          "size": {
+            "height": 296,
+            "width": 234
+          },
+          "zIndex": 7
+        },
+        {
+          "location": {
+            "x": 3217.8875400083571,
+            "y": 343.32629720022732
+          },
+          "nodeIndex": "dim Orders",
+          "size": {
+            "height": 224,
+            "width": 234
+          },
+          "zIndex": 6
+        },
+        {
+          "location": {
+            "x": 3372.5440893850046,
+            "y": -10
+          },
+          "nodeIndex": "dim Customer",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 5
+        },
+        {
+          "location": {
+            "x": 3551.7499842744846,
+            "y": 422.80065965719484
+          },
+          "nodeIndex": "dim Date",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 4
+        },
+        {
+          "location": {
+            "x": 3577.7499715588274,
+            "y": 786.81796995091577
+          },
+          "nodeIndex": "dim Sales KPI",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 3
+        },
+        {
+          "location": {
+            "x": 3873.7499842744846,
+            "y": 616.81796995091577
+          },
+          "nodeIndex": "dim Currency exchange",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 2
+        },
+        {
+          "location": {
+            "x": 1748.6127517324887,
+            "y": 210.84593163839475
+          },
+          "nodeIndex": "Last refresh",
+          "nodeLineageTag": "8b66e874-27be-4004-82df-e4d98bd18cad",
+          "size": {
+            "height": 104,
+            "width": 234
+          },
+          "zIndex": 1
+        },
+        {
+          "location": {
+            "x": 2013.5590296626719,
+            "y": 49.1117901665537
+          },
+          "nodeIndex": "Measures slicer (for review & etc.)",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 0
+        }
+      ],
+      "name": "All tables",
+      "zoomValue": 44.548268989727269,
+      "pinKeyFieldsToTop": false,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "All tables",
+  "defaultDiagram": "All tables"
+}

@@ -1,0 +1,212 @@
+table 'dim Date'
+	lineageTag: 057ed6d2-9d9b-468c-98a0-3bc45a83e169
+	dataCategory: Time
+
+	column Date
+		dataType: dateTime
+		isKey
+		isNullable: false
+		formatString: dd/mm/yyyy
+		sourceProviderType: date
+		lineageTag: 0dba480d-9ad2-4040-b941-0f566cbb748b
+		summarizeBy: none
+		sourceColumn: Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation PBI_FormatHint = {"isDateTimeCustom":true}
+
+	column DateKey
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 5f3bd2c8-0bf7-4f60-923b-1b6e9e734f1d
+		summarizeBy: count
+		sourceColumn: DateKey
+
+		annotation SummarizationSetBy = Automatic
+
+	column Year
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 0dd14d04-59c9-4401-85be-30958384fbd1
+		summarizeBy: none
+		sourceColumn: Year
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Year Quarter'
+		dataType: string
+		sourceProviderType: nvarchar(30)
+		lineageTag: 37b5384a-555b-4ba9-b12d-cdc207e41ec2
+		summarizeBy: none
+		sourceColumn: Year Quarter
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Year Quarter Number'
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 888efb62-92ef-4426-8a3c-7e5ab3853a42
+		summarizeBy: sum
+		sourceColumn: Year Quarter Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column Quarter
+		dataType: string
+		sourceProviderType: varchar(2)
+		lineageTag: f562a854-e8f5-442d-8292-24001c504c72
+		summarizeBy: none
+		sourceColumn: Quarter
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Year Month'
+		dataType: string
+		sourceProviderType: nvarchar(30)
+		lineageTag: ea591920-aa28-4bee-a5d5-4378b16efaaf
+		summarizeBy: none
+		sourceColumn: Year Month
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Year Month Short'
+		dataType: string
+		sourceProviderType: nvarchar(30)
+		lineageTag: fa925ec9-8702-4908-9319-fb2093168ca3
+		summarizeBy: none
+		sourceColumn: Year Month Short
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Year Month Number'
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: eb382c61-dfac-42d8-96bf-99cc57a047ea
+		summarizeBy: sum
+		sourceColumn: Year Month Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column Month
+		dataType: string
+		sourceProviderType: nvarchar(30)
+		lineageTag: f1594d01-9566-4a15-92a1-914761206846
+		summarizeBy: none
+		sourceColumn: Month
+		sortByColumn: 'Month Number'
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Month Short'
+		dataType: string
+		sourceProviderType: nvarchar(30)
+		lineageTag: 9c4d29cb-fa1b-406b-aa46-9eaeaa6e352a
+		summarizeBy: none
+		sourceColumn: Month Short
+		sortByColumn: 'Month Number'
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Month Number'
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 56abc90a-0dda-4030-a7f8-51e2395b5d99
+		summarizeBy: sum
+		sourceColumn: Month Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Day of Week'
+		dataType: string
+		sourceProviderType: nvarchar(30)
+		lineageTag: 0373d32a-74e6-46d9-932b-b34f93abc3fe
+		summarizeBy: none
+		sourceColumn: Day of Week
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Day of Week Short'
+		dataType: string
+		sourceProviderType: nvarchar(30)
+		lineageTag: aa876b09-5f98-499a-b9cb-160473a3a92c
+		summarizeBy: none
+		sourceColumn: Day of Week Short
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Day of Week Number'
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 3a9e987a-8d4b-4589-b3d4-818399fa0bfb
+		summarizeBy: sum
+		sourceColumn: Day of Week Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Working Day'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		sourceProviderType: bit
+		lineageTag: 09137d4c-89e2-41da-99c7-14223998b75b
+		summarizeBy: none
+		sourceColumn: Working Day
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Working Day Number'
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 27c2e519-e4f8-474e-88ed-3c046bac0600
+		summarizeBy: sum
+		sourceColumn: Working Day Number
+
+		annotation SummarizationSetBy = Automatic
+
+	hierarchy 'Calendar Timeline Hierarchy'
+		lineageTag: 35e5c6ad-01ec-433f-840d-dfbee47df56a
+
+		level Year
+			lineageTag: 021a5abb-d1d3-4cc4-89ac-f29069c1b54a
+			column: Year
+
+		level Quarter
+			lineageTag: ba8ec9dd-029a-49a8-9a9b-6f448deffb2b
+			column: Quarter
+
+		level Month
+			lineageTag: 1d46ff28-188e-479b-8e79-cc7ff2d5aac5
+			column: Month
+
+		level 'Month Number'
+			lineageTag: f81d2ba3-2ef3-4c84-bf53-09b14d951fbb
+			column: 'Month Number'
+
+	partition 'dim Date' = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database("BISERVER2", "Contoso 1M", [CommandTimeout=#duration(0, 0, 1, 0)]),
+				    Data_Date = Source{[Schema="Data",Item="Date"]}[Data]
+				in
+				    Data_Date
+
+	changedProperty = Name
+
+	annotation PBI_ResultType = Table
+
