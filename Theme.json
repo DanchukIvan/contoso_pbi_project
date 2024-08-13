@@ -1,0 +1,18 @@
+﻿{
+    "name": "Pet project theme",
+    "$schema": "reportThemeSchema-2.129.json",
+    "dataColors": [
+        "#3E5D5D",
+        "#5C3031",
+        "#51AEAF",
+        "#AE8585",
+        "#A0C5DA",
+        "#7996C0",
+        "#629897",
+        "#984B50",
+        "#C6CB2C"
+    ],
+    "good": "#629897",
+    "neutral": "#A0C5DA",
+    "bad": "#984B50"
+}
