@@ -7,6 +7,8 @@ The repository contains the sources of the Power BI <img src="https://github.com
 
 In total, the dashboard has **7 pages, 160+ measures (including formatting and object-specific measures)**, and the model consists of **20 tables**. The fact table around which the calculations were based contains more than **200K** rows.
 
+The report is not adapted for viewing on a smartphone.
+
 The report is saved as a power bi project (.pbib format, see more [here](https://learn.microsoft.com/en-us/power-bi/developer/projects/projects-overview)) for the purpose of git integration, but you can download a regular .pbix file and necessary assets from the Simple pbix folder.
 
 The repo sources contain:
