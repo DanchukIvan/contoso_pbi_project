@@ -251,11 +251,12 @@
             "y": 49.1117901665537
           },
           "nodeIndex": "Measures slicer (for review & etc.)",
+          "nodeLineageTag": "05142dc8-b46b-4b44-b6c7-c2b929409aab",
           "size": {
-            "height": 152,
-            "width": 234
+            "height": 167.71329292640797,
+            "width": 323.79024529375965
           },
-          "zIndex": 0
+          "zIndex": 20
         }
       ],
       "name": "All tables",

@@ -27,8 +27,8 @@ table 'Measures slicer (for review & etc.)'
 
 		extendedProperty ParameterMetadata =
 				{
-				  "kind": 2,
-				  "version": 3
+				  "version": 3,
+				  "kind": 2
 				}
 
 		annotation SummarizationSetBy = Automatic
@@ -64,7 +64,6 @@ table 'Measures slicer (for review & etc.)'
 				    ("Purchases", NAMEOF('Measures table'[Purchases CY]), 2, "Regular"),
 				    ("Average bill", NAMEOF('Measures table'[Average bill CY]), 0, "Cust specific"),
 				    ("Daily purchases", NAMEOF('Measures table'[Purchases per day CY]), 1, "Cust specific"),
-				    ("New customers", NAMEOF('Measures table'[New customers]), 2, "Cust specific"),
 				    ("12m customers activity", NAMEOF('Measures table'[12m customer activity, %]), 3, "Cust specific")
 				}
 

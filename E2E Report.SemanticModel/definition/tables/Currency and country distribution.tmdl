@@ -27,8 +27,8 @@ table 'Currency and country distribution'
 
 		extendedProperty ParameterMetadata =
 				{
-				  "kind": 2,
-				  "version": 3
+				  "version": 3,
+				  "kind": 2
 				}
 
 		annotation SummarizationSetBy = Automatic

@@ -124,6 +124,7 @@ table 'dim Store'
 
 		extendedProperty GroupingMetadata =
 				{
+				  "version": 0,
 				  "groupedColumns": [
 				    {
 				      "Column": {
@@ -135,8 +136,7 @@ table 'dim Store'
 				        "Property": "Country"
 				      }
 				    }
-				  ],
-				  "version": 0
+				  ]
 				}
 
 		annotation GroupingDesignState = {"Version":0,"Sources":[{"Name":"d","Entity":"dim Store"}],"GroupedColumns":[{"Column":{"Expression":{"SourceRef":{"Source":"d"}},"Property":"Country"}}],"GroupItems":[{"DisplayName":"(Blank)","BlankDefaultPlaceholder":true},{"DisplayName":"Europe and UK","Expression":{"In":{"Expressions":[{"Column":{"Expression":{"SourceRef":{"Source":"d"}},"Property":"Country"}}],"Values":[[{"Literal":{"Value":"'France'"}}],[{"Literal":{"Value":"'Germany'"}}],[{"Literal":{"Value":"'Italy'"}}],[{"Literal":{"Value":"'Netherlands'"}}],[{"Literal":{"Value":"'United Kingdom'"}}]]}}}]}

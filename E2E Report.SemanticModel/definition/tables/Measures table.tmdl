@@ -228,7 +228,7 @@ table 'Measures table'
 		displayFolder: Brand ranking\Dimensions
 		lineageTag: 0e6d919c-192c-4007-b59f-6a1e429fb0d9
 
-	/// Форматирующая мера. 
+	/// Форматирующая мера.
 	measure 'fmt - Avg bill rank summary' = ```
 			
 			    "Rank: " & [Avg bill rank CY] & 
@@ -286,7 +286,7 @@ table 'Measures table'
 		displayFolder: Brand ranking\Formatting
 		lineageTag: 4d3ec3dc-86ac-4736-b221-1e4c415875d3
 
-	/// Интегральный рейтинг бренда. Определяется на основе оценок всех остальных рейтингов. 
+	/// Интегральный рейтинг бренда. Определяется на основе оценок всех остальных рейтингов.
 	measure 'Integral brand rank CY' = RANKX(ALL('dim Product'[Brand]), [Integral brand rating], ,DESC, Dense)
 		displayFolder: Brand ranking\Dimensions
 		lineageTag: b821a43b-12d3-4d5f-8c60-14711c511043
@@ -431,8 +431,8 @@ table 'Measures table'
 
 		extendedProperty MeasureTemplate =
 				{
-				  "daxTemplateName": "MathematicalPercentageDifference",
-				  "version": 0
+				  "version": 0,
+				  "daxTemplateName": "MathematicalPercentageDifference"
 				}
 
 		changedProperty = FormatString
@@ -497,7 +497,7 @@ table 'Measures table'
 		displayFolder: Sales metrics\Formatting
 		lineageTag: fffb95f2-498a-4c89-b552-4826733c6215
 
-	/// Показатель увеличения продаж в разрезе продуктов. 
+	/// Показатель увеличения продаж в разрезе продуктов.
 	measure 'Products sales up' = ```
 			
 					VAR ProductsTable = 
@@ -955,7 +955,7 @@ table 'Measures table'
 		displayFolder: Customers metrics\Dimensions
 		lineageTag: fc325abd-8efd-44ce-a80a-2d2a2f398591
 
-	/// Количество ушедщих покупателей (отток покупателей). Покупатель попадает в отток если он не совершил ни одной покупки в текущем месяце. Мера не аддитивна на уровне дней. 
+	/// Количество ушедщих покупателей (отток покупателей). Покупатель попадает в отток если он не совершил ни одной покупки в текущем месяце. Мера не аддитивна на уровне дней.
 	measure 'MoM churned customers' = ```
 			
 			    VAR LastMonthCustomers = CALCULATETABLE(VALUES('dim Customer'[Company]), DATEADD('dim Date'[Date], - 1, MONTH))
@@ -1020,7 +1020,7 @@ table 'Measures table'
 
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
-	/// Мера подсчитывает долю активных покупателей от всех зарегистрированных покупателей на определенную дату. 
+	/// Мера подсчитывает долю активных покупателей от всех зарегистрированных покупателей на определенную дату.
 	measure 'Active customers rate' = ```
 			
 						ROUND(
@@ -1179,7 +1179,7 @@ table 'Measures table'
 				```
 
 	/// Изменение значения меры, представленной в Review measure slicer, относительно значения за прошлый период.
-	/// Если выбранная мера возвращает отрицательное значение за прошлый период, то расчет изменения ведется по абсолютной величине изменения показателя. 
+	/// Если выбранная мера возвращает отрицательное значение за прошлый период, то расчет изменения ведется по абсолютной величине изменения показателя.
 	measure 'Measures switch CY vs LY, %' = ```
 			
 			    VAR CorrectedLYM = IF([Measures switch LY] > 0, [Measures switch LY], ABS([Measures switch LY]))
@@ -1419,7 +1419,7 @@ table 'Measures table'
 		displayFolder: Customers metrics\Dimensions
 		lineageTag: adaa6ffe-3bf5-4a52-b214-4a2bb03308a9
 
-	/// Скользящая средняя доля активных клиентов за последние 3 месяца. 
+	/// Скользящая средняя доля активных клиентов за последние 3 месяца.
 	measure '3m avg active customers rate, %' = ```
 			
 			    ROUND(
@@ -1960,7 +1960,7 @@ table 'Measures table'
 
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
-	/// Мера формирует подзаголовок для карточки Total sales на главной странице в виде значения изменения показателя за период относительно прошлого года. 
+	/// Мера формирует подзаголовок для карточки Total sales на главной странице в виде значения изменения показателя за период относительно прошлого года.
 	measure 'fmt - Total sales barchart subtitle' = ```
 			
 			    FORMAT([Total sales CY vs LY, %], "0.00%")
